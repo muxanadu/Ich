@@ -499,16 +499,15 @@ const ALLOWED_EMAILS = ['deine@email.de', 'zweite@email.de'];</pre>
   <div class="fg"><label>Notiz (optional)</label><textarea id="em-note" placeholder="Details…" style="min-height:48px;"></textarea></div>
   <div class="fg"><label>Quadrant</label><select id="em-quad"><option value="q1">Q1 – Sofort erledigen</option><option value="q2">Q2 – Planen</option><option value="q3">Q3 – Delegieren</option><option value="q4">Q4 – Eliminieren</option></select></div>
   <div class="fg">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg2);border-radius:var(--rm);border:0.5px solid var(--brd);">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg2);border-radius:var(--rm);border:0.5px solid var(--brd);cursor:pointer;" onclick="emClickSchedule()">
       <div>
         <div style="font-size:13px;font-weight:500;color:var(--txt);">Einplanen</div>
         <div style="font-size:11px;color:var(--txt3);margin-top:2px;">Aufgabe in To-Do oder Routine übertragen</div>
       </div>
-      <label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0;">
-        <input type="checkbox" id="em-schedule-toggle" onchange="emToggleSchedule()" style="opacity:0;width:0;height:0;position:absolute;"/>
-        <span id="em-schedule-track" style="position:absolute;inset:0;background:var(--bg3);border-radius:11px;border:0.5px solid var(--brd2);transition:background .2s;cursor:pointer;" onclick="$('em-schedule-toggle').click()"></span>
-        <span id="em-schedule-thumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:white;border-radius:50%;transition:transform .2s;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.2);"></span>
-      </label>
+      <div id="em-toggle-track" style="position:relative;width:40px;height:22px;flex-shrink:0;">
+        <div id="em-track-bg" style="position:absolute;inset:0;background:var(--bg3);border-radius:11px;border:0.5px solid var(--brd2);transition:background .2s;"></div>
+        <div id="em-track-thumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:white;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.25);"></div>
+      </div>
     </div>
     <div id="em-schedule-options" style="display:none;margin-top:8px;">
       <div class="type-toggle"><button class="goal-btn active" id="em-once-btn" onclick="emSetType('once')">Einmalig → To-Do</button><button class="avoid-btn" id="em-repeat-btn" onclick="emSetType('repeat')">Wiederkehrend → Routine</button></div>
@@ -581,8 +580,8 @@ const SUPABASE_KEY  = 'sb_publishable_gapZytP_dZoFDqCsrws5Lg_4TMCK37u';
 
 /* Whitelist: nur diese E-Mails dürfen sich registrieren und einloggen */
 const ALLOWED_EMAILS = [
-  'abdo.mo@web.de',
-  'thuraya02@web.de'
+  'deine@email.de',
+  'zweite@email.de'
   /* weitere E-Mails hier einfügen */
 ];
 
@@ -695,14 +694,30 @@ async function dbGet(table){
     .select('*')
     .eq('user_id', currentUser.id)
     .order('created_at', {ascending:true});
-  if(error){ setSyncDot('err'); return lg(table)||[]; }
+  if(error){ setSyncDot('err'); console.error('dbGet error:', table, error.message); return lg(table)||[]; }
   setSyncDot('ok');
-  lset(table, data);
-  return data || [];
+  /* Remap snake_case → camelCase for em_tasks */
+  let rows = data || [];
+  if(table === 'em_tasks'){
+    rows = rows.map(r=>{
+      const out={...r};
+      if('task_type'  in out){ out.taskType  = out.task_type;  delete out.task_type; }
+      if('source_id'  in out){ out.sourceId  = out.source_id;  delete out.source_id; }
+      return out;
+    });
+  }
+  lset(table, rows);
+  return rows;
 }
 
 async function dbUpsert(table, row){
-  const r = {...row, user_id: currentUser.id};
+  /* Normalize em_tasks fields: JS uses camelCase, SQL uses snake_case */
+  let r = {...row, user_id: currentUser.id};
+  if(table === 'em_tasks'){
+    if('taskType'  in r){ r.task_type  = r.taskType;  delete r.taskType; }
+    if('sourceId'  in r){ r.source_id  = r.sourceId;  delete r.sourceId; }
+    if('createdAt' in r){ r.created_at = r.createdAt; delete r.createdAt; }
+  }
   if(useLocal){
     let a = lg(table)||[];
     const i = a.findIndex(x=>x.id===row.id);
@@ -711,7 +726,7 @@ async function dbUpsert(table, row){
   }
   setSyncDot('');
   const {data, error} = await SB.from(table).upsert(r, {onConflict:'id'}).select().single();
-  if(error){ setSyncDot('err'); return r; }
+  if(error){ setSyncDot('err'); console.error('dbUpsert error:', table, error.message); return r; }
   setSyncDot('ok'); return data;
 }
 
@@ -817,20 +832,23 @@ let emTasks = [], emEditId = null, emTaskType = 'once', emScheduleOn = false;
 
 async function emLoad(){ emTasks = await dbGet('em_tasks'); emRender(); }
 
+function emClickSchedule(){
+  emSetScheduleUI(!emScheduleOn);
+}
+
 function emToggleSchedule(){
-  emScheduleOn = $('em-schedule-toggle').checked;
-  $('em-schedule-options').style.display = emScheduleOn ? '' : 'none';
-  $('em-schedule-track').style.background = emScheduleOn ? 'var(--accent)' : 'var(--bg3)';
-  $('em-schedule-thumb').style.transform  = emScheduleOn ? 'translateX(18px)' : 'translateX(0)';
-  if(!emScheduleOn) emSetType('once');
+  emSetScheduleUI(!emScheduleOn);
 }
 
 function emSetScheduleUI(on){
   emScheduleOn = on;
-  const cb = $('em-schedule-toggle'); if(cb) cb.checked = on;
-  const opts = $('em-schedule-options'); if(opts) opts.style.display = on ? '' : 'none';
-  const tr = $('em-schedule-track'); if(tr) tr.style.background = on ? 'var(--accent)' : 'var(--bg3)';
-  const th = $('em-schedule-thumb'); if(th) th.style.transform = on ? 'translateX(18px)' : 'translateX(0)';
+  const opts  = $('em-schedule-options');
+  const track = $('em-track-bg');
+  const thumb = $('em-track-thumb');
+  if(opts)  opts.style.display = on ? '' : 'none';
+  if(track) track.style.background = on ? 'var(--accent)' : 'var(--bg3)';
+  if(thumb) thumb.style.transform  = on ? 'translateX(18px)' : 'translateX(0)';
+  if(!on)   emSetType('once');
 }
 
 function emSetType(t){
@@ -1325,17 +1343,26 @@ async function pfRender(){
 }
 
 /* ═══════════════════════════════════════════════
-   BOOT
+   BOOT — single entry point, no race condition
 ═══════════════════════════════════════════════ */
 initSupabase();
 if(useLocal){
   enterApp({email:'Offline-Modus', id:'local'});
 } else {
+  /* First check existing session. If found, enter. Then watch for future changes. */
   SB.auth.getSession().then(({data:{session}})=>{
-    if(session?.user) enterApp(session.user);
-  });
-  SB.auth.onAuthStateChange((_,session)=>{
-    if(session?.user && !currentUser) enterApp(session.user);
+    if(session?.user){
+      enterApp(session.user);
+    }
+    /* Only start watching AFTER initial session check resolves */
+    SB.auth.onAuthStateChange((event, session)=>{
+      if(event === 'SIGNED_IN' && session?.user && !currentUser){
+        enterApp(session.user);
+      }
+      if(event === 'SIGNED_OUT'){
+        currentUser = null; _appStarted = false;
+      }
+    });
   });
 }
 </script>
