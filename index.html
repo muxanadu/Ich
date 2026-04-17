@@ -498,8 +498,21 @@ const ALLOWED_EMAILS = ['deine@email.de', 'zweite@email.de'];</pre>
   <div class="fg"><label>Aufgabe / Ziel</label><input type="text" id="em-name" placeholder="Was ist zu tun?"/></div>
   <div class="fg"><label>Notiz (optional)</label><textarea id="em-note" placeholder="Details…" style="min-height:48px;"></textarea></div>
   <div class="fg"><label>Quadrant</label><select id="em-quad"><option value="q1">Q1 – Sofort erledigen</option><option value="q2">Q2 – Planen</option><option value="q3">Q3 – Delegieren</option><option value="q4">Q4 – Eliminieren</option></select></div>
-  <div class="fg"><label>Art der Aufgabe</label>
-    <div class="type-toggle"><button class="goal-btn active" id="em-once-btn" onclick="emSetType('once')">Einmalig → To-Do</button><button class="avoid-btn" id="em-repeat-btn" onclick="emSetType('repeat')">Wiederkehrend → Routine</button></div>
+  <div class="fg">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg2);border-radius:var(--rm);border:0.5px solid var(--brd);">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--txt);">Einplanen</div>
+        <div style="font-size:11px;color:var(--txt3);margin-top:2px;">Aufgabe in To-Do oder Routine übertragen</div>
+      </div>
+      <label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0;">
+        <input type="checkbox" id="em-schedule-toggle" onchange="emToggleSchedule()" style="opacity:0;width:0;height:0;position:absolute;"/>
+        <span id="em-schedule-track" style="position:absolute;inset:0;background:var(--bg3);border-radius:11px;border:0.5px solid var(--brd2);transition:background .2s;cursor:pointer;" onclick="$('em-schedule-toggle').click()"></span>
+        <span id="em-schedule-thumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:white;border-radius:50%;transition:transform .2s;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.2);"></span>
+      </label>
+    </div>
+    <div id="em-schedule-options" style="display:none;margin-top:8px;">
+      <div class="type-toggle"><button class="goal-btn active" id="em-once-btn" onclick="emSetType('once')">Einmalig → To-Do</button><button class="avoid-btn" id="em-repeat-btn" onclick="emSetType('repeat')">Wiederkehrend → Routine</button></div>
+    </div>
   </div>
   <div class="modal-actions"><button class="btn-sec" onclick="closeOverlay('em-modal')">Abbrechen</button><button class="btn-pri" onclick="emSave()">Speichern</button></div>
 </div></div>
@@ -568,8 +581,8 @@ const SUPABASE_KEY  = 'sb_publishable_gapZytP_dZoFDqCsrws5Lg_4TMCK37u';
 
 /* Whitelist: nur diese E-Mails dürfen sich registrieren und einloggen */
 const ALLOWED_EMAILS = [
-  'abdo.mo@web.de',
-  'thuraya02@web.de'
+  'deine@email.de',
+  'zweite@email.de'
   /* weitere E-Mails hier einfügen */
 ];
 
@@ -637,21 +650,29 @@ async function doRegister(){
 
 async function doLogout(){
   if(!useLocal) await SB.auth.signOut();
-  $('main-app').style.display  = 'none';
+  $('main-app').style.display    = 'none';
   $('auth-screen').style.display = 'flex';
-  currentUser = null;
+  currentUser = null; _appStarted = false;
   emTasks=[]; lstLists=[]; dyEntries=[]; pfIdents=[];
   rtData={work:{sleep:'22:30',wake:'06:30',blocks:[]},free:{sleep:'23:30',wake:'08:00',blocks:[]}};
   ovData={todos:[],rules:[],goals:[]};
 }
 
+let _appStarted = false;
 function enterApp(user){
+  if(_appStarted && currentUser?.id === user.id) return;
+  _appStarted = true;
   currentUser = user;
   $('auth-screen').style.display  = 'none';
+  $('setup-screen').style.display = 'none';
   $('main-app').style.display     = '';
-  $('nav-email').textContent       = user.email || '';
+  $('nav-email').textContent      = user.email || '';
+  emTasks=[]; lstLists=[]; dyEntries=[]; pfIdents=[];
+  rtData={work:{sleep:'22:30',wake:'06:30',blocks:[]},free:{sleep:'23:30',wake:'08:00',blocks:[]}};
+  ovData={todos:[],rules:[],goals:[]};
+  lstInitDone=false; _loading=false;
   loadAll();
-  setTimeout(showReminder, 800);
+  setTimeout(showReminder, 1200);
 }
 
 /* ═══════════════════════════════════════════════
@@ -792,9 +813,25 @@ function exportAllData(){
 /* ═══════════════════════════════════════════════
    EISENHOWER
 ═══════════════════════════════════════════════ */
-let emTasks = [], emEditId = null, emTaskType = 'once';
+let emTasks = [], emEditId = null, emTaskType = 'once', emScheduleOn = false;
 
 async function emLoad(){ emTasks = await dbGet('em_tasks'); emRender(); }
+
+function emToggleSchedule(){
+  emScheduleOn = $('em-schedule-toggle').checked;
+  $('em-schedule-options').style.display = emScheduleOn ? '' : 'none';
+  $('em-schedule-track').style.background = emScheduleOn ? 'var(--accent)' : 'var(--bg3)';
+  $('em-schedule-thumb').style.transform  = emScheduleOn ? 'translateX(18px)' : 'translateX(0)';
+  if(!emScheduleOn) emSetType('once');
+}
+
+function emSetScheduleUI(on){
+  emScheduleOn = on;
+  const cb = $('em-schedule-toggle'); if(cb) cb.checked = on;
+  const opts = $('em-schedule-options'); if(opts) opts.style.display = on ? '' : 'none';
+  const tr = $('em-schedule-track'); if(tr) tr.style.background = on ? 'var(--accent)' : 'var(--bg3)';
+  const th = $('em-schedule-thumb'); if(th) th.style.transform = on ? 'translateX(18px)' : 'translateX(0)';
+}
 
 function emSetType(t){
   emTaskType = t;
@@ -803,16 +840,19 @@ function emSetType(t){
 }
 
 function emOpenModal(q, editId){
-  emEditId = editId||null; emTaskType='once'; emSetType('once');
+  emEditId = editId||null;
+  emSetType('once'); emSetScheduleUI(false);
   if(editId){
     const t = emTasks.find(x=>x.id===editId); if(!t)return;
-    $('em-modal-title').textContent='Bearbeiten';
-    $('em-name').value=t.name; $('em-note').value=t.note||''; $('em-quad').value=t.quad;
-    emSetType(t.taskType||'once');
+    $('em-modal-title').textContent = 'Bearbeiten';
+    $('em-name').value = t.name; $('em-note').value = t.note||''; $('em-quad').value = t.quad;
+    const sched = !!(t.taskType && t.sourceId);
+    emSetScheduleUI(sched);
+    if(sched) emSetType(t.taskType||'once');
   } else {
-    $('em-modal-title').textContent='Neue Aufgabe';
-    $('em-name').value=''; $('em-note').value='';
-    if(q) $('em-quad').value=q;
+    $('em-modal-title').textContent = 'Neue Aufgabe';
+    $('em-name').value = ''; $('em-note').value = '';
+    if(q) $('em-quad').value = q;
   }
   openOverlay('em-modal'); setTimeout(()=>$('em-name').focus(),60);
 }
@@ -820,34 +860,74 @@ function emOpenModal(q, editId){
 async function emSave(){
   const n=$('em-name').value.trim(); if(!n)return $('em-name').focus();
   const quad=$('em-quad').value;
+
   if(emEditId){
-    const t=emTasks.find(x=>x.id===emEditId);
-    if(t){ t.name=n; t.note=$('em-note').value.trim(); t.quad=quad; t.taskType=emTaskType; }
+    const t=emTasks.find(x=>x.id===emEditId); if(!t)return;
+    const oldName=t.name;
+    t.name=n; t.note=$('em-note').value.trim(); t.quad=quad;
+    if(emScheduleOn){
+      t.taskType=emTaskType;
+      if(!t.sourceId) t.sourceId=uid();
+    } else { t.taskType=null; t.sourceId=null; }
     await dbUpsert('em_tasks',t);
+    if(t.sourceId){
+      const todo=(ovData.todos||[]).find(x=>x.sourceId===t.sourceId);
+      if(todo){todo.text=n;await ovSaveData();ovRender();}
+    }
+    if(oldName!==n){
+      let ch=false;
+      ['work','free'].forEach(day=>{(rtData[day]?.blocks||[]).forEach(b=>{if(b.sourceId===t.sourceId){b.name=n;ch=true;}});});
+      if(ch){await rtSaveData();rtRenderTable();}
+    }
   } else {
-    const row={id:uid(),name:n,note:$('em-note').value.trim(),quad,done:false,taskType:emTaskType,createdAt:todayStr()};
+    const sourceId=emScheduleOn?uid():null;
+    const row={id:uid(),name:n,note:$('em-note').value.trim(),quad,done:false,
+               taskType:emScheduleOn?emTaskType:null,sourceId,createdAt:todayStr()};
     emTasks.push(row); await dbUpsert('em_tasks',row);
-    if(emTaskType==='once'&&(quad==='q1'||quad==='q2')){
-      ovData.todos.push({id:uid(),text:n,done:false,fromMatrix:true,priority:quad});
+    if(emScheduleOn&&emTaskType==='once'){
+      ovData.todos=ovData.todos||[];
+      ovData.todos.push({id:uid(),text:n,done:false,fromMatrix:true,priority:quad,sourceId});
       await ovSaveData(); ovRender();
     }
   }
   emRender(); closeOverlay('em-modal');
 }
 
-async function emToggle(id){ const t=emTasks.find(x=>x.id===id); if(t){t.done=!t.done; await dbUpsert('em_tasks',t); emRender();} }
-async function emDel(id){ confirm2('Aufgabe löschen?','Wird dauerhaft entfernt.',async()=>{ emTasks=emTasks.filter(x=>x.id!==id); await dbDelete('em_tasks',id); emRender(); }); }
+async function emToggle(id){ const t=emTasks.find(x=>x.id===id); if(t){t.done=!t.done;await dbUpsert('em_tasks',t);emRender();} }
 
-function emIsInRoutine(name){
+async function emDel(id){
+  confirm2('Aufgabe löschen?','Wird aus Matrix, To-Do und Routine entfernt.',async()=>{
+    const t=emTasks.find(x=>x.id===id);
+    const sid=t?.sourceId;
+    emTasks=emTasks.filter(x=>x.id!==id);
+    await dbDelete('em_tasks',id);
+    if(sid){
+      const b=(ovData.todos||[]).length;
+      ovData.todos=(ovData.todos||[]).filter(x=>x.sourceId!==sid);
+      if((ovData.todos||[]).length!==b){await ovSaveData();ovRender();}
+      let ch=false;
+      ['work','free'].forEach(day=>{
+        const b2=(rtData[day]?.blocks||[]).length;
+        rtData[day].blocks=(rtData[day]?.blocks||[]).filter(b=>b.sourceId!==sid);
+        if(rtData[day].blocks.length!==b2)ch=true;
+      });
+      if(ch){await rtSaveData();rtRenderTable();}
+    }
+    emRender();
+  });
+}
+
+function emIsInRoutine(t){
   const all=[...(rtData.work?.blocks||[]),...(rtData.free?.blocks||[])];
-  return all.some(b=>b.name.toLowerCase().includes(name.toLowerCase()));
+  if(t.sourceId) return all.some(b=>b.sourceId===t.sourceId);
+  return false;
 }
 
 function emRender(){
   const now=new Date();
   ['q1','q2','q3','q4'].forEach(q=>{
     $('em-'+q).innerHTML=emTasks.filter(t=>t.quad===q).map(t=>{
-      const inRt=emIsInRoutine(t.name);
+      const inRt=emIsInRoutine(t);
       const days=t.createdAt?Math.floor((now-new Date(t.createdAt))/86400000):0;
       const overdue=q==='q1'&&days>7&&!t.done;
       return `<div class="em-task${inRt?' in-routine':''}${overdue?' overdue':''}">
@@ -858,7 +938,8 @@ function emRender(){
           <div class="em-task-badges">
             ${inRt?`<span class="em-task-badge" style="background:var(--accent-bg);color:var(--accent);">In Routine</span>`:''}
             ${overdue?`<span class="em-task-badge" style="background:#FCEBEB;color:#791F1F;">Überfällig</span>`:''}
-            ${t.taskType==='repeat'?`<span class="em-task-badge" style="background:var(--blue-bg);color:var(--blue);">Wiederkehrend</span>`:''}
+            ${t.taskType==='repeat'&&t.sourceId?`<span class="em-task-badge" style="background:var(--blue-bg);color:var(--blue);">Wiederkehrend</span>`:''}
+            ${t.taskType==='once'&&t.sourceId?`<span class="em-task-badge" style="background:var(--gold-bg);color:var(--gold);">Im To-Do</span>`:''}
           </div>
         </div>
         <button class="icon-btn" onclick="emOpenModal(null,'${t.id}')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
@@ -904,7 +985,15 @@ function ovRender(){
 
 async function ovAddTodo(){ const v=$('ov-todo-inp').value.trim(); if(!v)return; ovData.todos.push({id:uid(),text:v,done:false}); $('ov-todo-inp').value=''; await ovSaveData(); ovRender(); }
 async function ovToggleTodo(id){ const t=(ovData.todos||[]).find(x=>x.id===id); if(t){t.done=!t.done; await ovSaveData(); ovRender();} }
-async function ovDelTodo(id){ ovData.todos=(ovData.todos||[]).filter(x=>x.id!==id); await ovSaveData(); ovRender(); }
+async function ovDelTodo(id){
+  const todo=(ovData.todos||[]).find(x=>x.id===id);
+  ovData.todos=(ovData.todos||[]).filter(x=>x.id!==id);
+  await ovSaveData(); ovRender();
+  if(todo?.sourceId){
+    const t=emTasks.find(x=>x.sourceId===todo.sourceId);
+    if(t){t.sourceId=null;t.taskType=null;await dbUpsert('em_tasks',t);emRender();}
+  }
+}
 async function ovAddRule(){ const v=$('ov-rule-inp').value.trim(); if(!v)return; ovData.rules.push({id:uid(),text:v}); $('ov-rule-inp').value=''; await ovSaveData(); ovRender(); }
 async function ovDelRule(id){ ovData.rules=(ovData.rules||[]).filter(x=>x.id!==id); await ovSaveData(); ovRender(); }
 
@@ -968,7 +1057,10 @@ function rtOpenModal(h){ rtEditId=null; rtBlockType='goal'; rtSetType('goal'); $
 function rtEditBlock(id){ const b=(rtData[rtDay].blocks||[]).find(x=>x.id===id); if(!b)return; rtEditId=id; rtBlockType=b.type||'goal'; rtSetType(rtBlockType); $('rt-modal-title').textContent='Block bearbeiten'; $('rt-name').value=b.name; $('rt-why').value=b.why||''; $('rt-from').value=b.from; $('rt-to').value=b.to; rtSelColor=b.color||0; rtBuildPalette(); openOverlay('rt-modal'); }
 async function rtSave(){
   const n=$('rt-name').value.trim(); if(!n)return $('rt-name').focus();
-  const block={id:rtEditId||uid(),name:n,why:$('rt-why').value.trim(),from:$('rt-from').value,to:$('rt-to').value,color:rtSelColor,type:rtBlockType};
+  const matchedTask=emTasks.find(t=>t.name.toLowerCase()===n.toLowerCase()&&t.taskType==='repeat'&&t.sourceId);
+  const block={id:rtEditId||uid(),name:n,why:$('rt-why').value.trim(),
+               from:$('rt-from').value,to:$('rt-to').value,color:rtSelColor,type:rtBlockType,
+               sourceId:matchedTask?.sourceId||null};
   if(rtEditId){ const i=(rtData[rtDay].blocks||[]).findIndex(x=>x.id===rtEditId); if(i>=0)rtData[rtDay].blocks[i]=block; }
   else { rtData[rtDay].blocks=rtData[rtDay].blocks||[]; rtData[rtDay].blocks.push(block); }
   await rtSaveData(); rtRenderTable(); closeOverlay('rt-modal');
