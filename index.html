@@ -149,6 +149,14 @@ textarea{resize:vertical;min-height:68px;line-height:1.6;}
 .em-task-text.done{text-decoration:line-through;color:var(--txt3);}
 .em-task-badges{display:flex;gap:4px;margin-top:3px;flex-wrap:wrap;}
 .em-task-badge{font-size:9px;padding:1px 6px;border-radius:8px;white-space:nowrap;}
+.em-role-chip{font-size:9px;padding:2px 7px;border-radius:10px;font-weight:500;white-space:nowrap;}
+.role-filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center;}
+.role-filter-label{font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;margin-right:4px;}
+.role-select-list{display:flex;gap:6px;flex-wrap:wrap;max-height:120px;overflow-y:auto;padding:4px;background:var(--bg2);border:0.5px solid var(--brd);border-radius:var(--rm);min-height:40px;}
+.role-select-chip{font-size:11px;padding:4px 10px;border-radius:20px;border:0.5px solid var(--brd);background:var(--bg);cursor:pointer;font-family:var(--sans);color:var(--txt2);transition:all .12s;user-select:none;}
+.role-select-chip:hover{border-color:var(--brd2);color:var(--txt);}
+.role-select-chip.sel{color:#fff;border-color:transparent;font-weight:500;}
+.role-empty-hint{font-size:11px;color:var(--txt3);padding:8px;font-style:italic;}
 .em-empty{font-size:11px;color:var(--txt3);text-align:center;padding:1rem 0;border:0.5px dashed var(--brd);border-radius:var(--rm);cursor:pointer;margin-top:4px;}
 .em-empty:hover{border-color:var(--brd2);}
 .stats-bar{display:flex;gap:14px;flex-wrap:wrap;}
@@ -205,7 +213,7 @@ textarea{resize:vertical;min-height:68px;line-height:1.6;}
 .type-toggle .avoid-btn.active{background:var(--avoid-bg);color:var(--avoid);}
 
 /* ── LISTEN ── */
-.lists-layout{display:grid;grid-template-columns:210px 1fr;gap:16px;align-items:start;}
+.lists-layout{display:grid;grid-template-columns:260px 1fr;gap:16px;align-items:start;}
 @media(max-width:640px){.lists-layout{grid-template-columns:1fr;}}
 .lst-sidebar-item{padding:9px 12px;border-radius:var(--rm);cursor:pointer;font-size:13px;color:var(--txt2);border:0.5px solid transparent;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
 .lst-sidebar-item:hover{background:var(--bg2);}
@@ -312,9 +320,9 @@ textarea{resize:vertical;min-height:68px;line-height:1.6;}
         Gehe zu <strong>Project Settings → API</strong>.<br>
         Kopiere <strong>Project URL</strong> und <strong>anon public</strong> Key.<br><br>
         Öffne diese HTML-Datei in einem Texteditor und ersetze ganz oben im Script:<br>
-        <pre>const SUPABASE_URL = 'https://wqugtrrygvhwqtwuqblz.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_gapZytP_dZoFDqCsrws5Lg_4TMCK37u';
-const ALLOWED_EMAILS = ['abdo.mo@web.de', 'thuraya02@web.de'];</pre>
+        <pre>const SUPABASE_URL = 'https://DEINE-ID.supabase.co';
+const SUPABASE_KEY = 'dein-anon-key';
+const ALLOWED_EMAILS = ['deine@email.de', 'zweite@email.de'];</pre>
         Speichere die Datei.
       </div>
     </div>
@@ -401,6 +409,7 @@ const ALLOWED_EMAILS = ['abdo.mo@web.de', 'thuraya02@web.de'];</pre>
     <button class="btn-pri" onclick="emOpenModal()">+ Aufgabe</button>
   </div>
   <div style="margin-bottom:5px;"><div class="em-axis-x"><span>weniger wichtig</span><span>sehr wichtig</span></div></div>
+  <div class="role-filter-bar" id="em-role-filter"></div>
   <div class="em-wrap">
     <div class="em-axis-y">nicht dringend ← Dringlichkeit → dringend</div>
     <div class="em-grid">
@@ -499,6 +508,7 @@ const ALLOWED_EMAILS = ['abdo.mo@web.de', 'thuraya02@web.de'];</pre>
   <div class="fg"><label>Aufgabe / Ziel</label><input type="text" id="em-name" placeholder="Was ist zu tun?"/></div>
   <div class="fg"><label>Notiz (optional)</label><textarea id="em-note" placeholder="Details…" style="min-height:48px;"></textarea></div>
   <div class="fg"><label>Quadrant</label><select id="em-quad"><option value="q1">Q1 – Sofort erledigen</option><option value="q2">Q2 – Planen</option><option value="q3">Q3 – Delegieren</option><option value="q4">Q4 – Eliminieren</option></select></div>
+  <div class="fg"><label>Rollen (optional)</label><div id="em-roles" class="role-select-list"></div><div class="muted" style="margin-top:4px;font-size:11px;">Welche deiner Identitäten betrifft diese Aufgabe?</div></div>
   <div class="fg">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg2);border-radius:var(--rm);border:0.5px solid var(--brd);cursor:pointer;" onclick="emClickSchedule()">
       <div>
@@ -710,12 +720,19 @@ async function dbGet(table){
   if(table === 'dy_entries'){
     rows = rows.map(r=>{
       const out={...r};
-      /* DB stores as routinepct (lowercase) — expose as both for compatibility */
-      if('routinepct' in out && !('routinePct' in out)){ out.routinePct = out.routinepct; }
-      if('routinePct' in out && !('routinepct' in out)){ out.routinepct = out.routinePct; }
-      /* onePct may come back as array or null */
+      /* DB stores snake_case (routine_pct, one_pct) — expose as camelCase for JS */
+      if('routine_pct' in out){ out.routinePct = out.routine_pct; }
+      if('one_pct' in out){ out.onePct = out.one_pct; }
+      /* Fallbacks */
       if(!out.onePct) out.onePct = [];
-      if(!out.routinePct && out.routinePct !== 0) out.routinePct = 0;
+      if(out.routinePct === null || out.routinePct === undefined) out.routinePct = 0;
+      return out;
+    });
+  }
+  if(table === 'em_tasks'){
+    rows = rows.map(r=>{
+      const out={...r};
+      if(!Array.isArray(out.roles)) out.roles = [];
       return out;
     });
   }
@@ -724,12 +741,22 @@ async function dbGet(table){
 }
 
 async function dbUpsert(table, row){
-  /* Normalize em_tasks fields: JS uses camelCase, SQL uses snake_case */
+  /* Normalize fields: JS uses camelCase, DB uses snake_case */
   let r = {...row, user_id: currentUser.id};
   if(table === 'em_tasks'){
     if('taskType'  in r){ r.task_type  = r.taskType;  delete r.taskType; }
     if('sourceId'  in r){ r.source_id  = r.sourceId;  delete r.sourceId; }
     if('createdAt' in r){ r.created_at = r.createdAt; delete r.createdAt; }
+    if(!Array.isArray(r.roles)) r.roles = [];
+  }
+  if(table === 'dy_entries'){
+    /* JS → DB column mapping */
+    if('routinePct' in r){ r.routine_pct = r.routinePct; delete r.routinePct; }
+    if('routinepct' in r){ if(r.routine_pct === undefined) r.routine_pct = r.routinepct; delete r.routinepct; }
+    if('onePct'     in r){ r.one_pct = r.onePct; delete r.onePct; }
+    /* Safety defaults */
+    if(r.routine_pct === undefined || r.routine_pct === null) r.routine_pct = 0;
+    if(!Array.isArray(r.one_pct)) r.one_pct = [];
   }
   if(useLocal){
     let a = lg(table)||[];
@@ -739,7 +766,20 @@ async function dbUpsert(table, row){
   }
   setSyncDot('');
   const {data, error} = await SB.from(table).upsert(r, {onConflict:'id'}).select().single();
-  if(error){ setSyncDot('err'); console.error('dbUpsert error:', table, error.message); return r; }
+  if(error){
+    setSyncDot('err');
+    console.error('dbUpsert error:', table, error.message, error.details || '', 'Row:', r);
+    /* Critical: save to localStorage as fallback so user doesn't lose data */
+    let a = lg(table)||[];
+    const i = a.findIndex(x=>x.id===row.id);
+    i>=0 ? a[i]=r : a.push(r);
+    lset(table, a);
+    /* Show user-visible warning for diary saves */
+    if(table === 'dy_entries'){
+      alert('⚠️ Speichern in Supabase fehlgeschlagen:\n\n' + (error.message||'Unbekannter Fehler') + '\n\nDer Eintrag wurde lokal gesichert. Prüfe dein Supabase-Setup (SQL-Migration v3 ausführen).');
+    }
+    return r;
+  }
   setSyncDot('ok'); return data;
 }
 
@@ -803,7 +843,9 @@ function goTo(i){
 let _loading = false;
 async function loadAll(){
   if(_loading) return; _loading = true;
-  await Promise.all([emLoad(), rtLoad(), lstLoad(), dyLoad(), ovLoad()]);
+  await Promise.all([emLoad(), rtLoad(), lstLoad(), dyLoad(), ovLoad(), pfLoadIdents()]);
+  /* Re-render matrix now that identities are loaded (role chips/filter) */
+  emRender();
   _loading = false;
 }
 
@@ -842,8 +884,56 @@ function exportAllData(){
    EISENHOWER
 ═══════════════════════════════════════════════ */
 let emTasks = [], emEditId = null, emTaskType = 'once', emScheduleOn = false;
+let emSelRoles = [];      // roles selected in modal
+let emRoleFilter = null;  // active role filter on matrix view (null = all)
 
 async function emLoad(){ emTasks = await dbGet('em_tasks'); emRender(); }
+
+/* Build role picker inside modal */
+function emBuildRolePicker(){
+  const wrap = $('em-roles');
+  if(!pfIdents || pfIdents.length === 0){
+    wrap.innerHTML = '<div class="role-empty-hint">Noch keine Identitäten definiert. Lege sie im Profil an.</div>';
+    return;
+  }
+  wrap.innerHTML = pfIdents.map(i=>{
+    const C = PF_COLORS[i.color||0];
+    const on = emSelRoles.includes(i.id);
+    return `<div class="role-select-chip${on?' sel':''}"
+      style="${on?`background:${C.ring};`:''}"
+      onclick="emToggleRole('${i.id}',this)">${i.name}</div>`;
+  }).join('');
+}
+
+function emToggleRole(idRole, el){
+  const idx = emSelRoles.indexOf(idRole);
+  if(idx>=0) emSelRoles.splice(idx,1); else emSelRoles.push(idRole);
+  emBuildRolePicker();
+}
+
+/* Role filter bar above matrix */
+function emBuildRoleFilter(){
+  const bar = $('em-role-filter');
+  if(!pfIdents || pfIdents.length === 0){ bar.innerHTML = ''; return; }
+  const allChip = `<span class="role-filter-label">Filter:</span>
+    <div class="role-select-chip${emRoleFilter===null?' sel':''}"
+      style="${emRoleFilter===null?'background:var(--txt);':''}"
+      onclick="emSetRoleFilter(null)">Alle</div>`;
+  const chips = pfIdents.map(i=>{
+    const C = PF_COLORS[i.color||0];
+    const on = emRoleFilter === i.id;
+    return `<div class="role-select-chip${on?' sel':''}"
+      style="${on?`background:${C.ring};`:''}"
+      onclick="emSetRoleFilter('${i.id}')">${i.name}</div>`;
+  }).join('');
+  bar.innerHTML = allChip + chips;
+}
+
+function emSetRoleFilter(idRole){
+  emRoleFilter = idRole;
+  emBuildRoleFilter();
+  emRender();
+}
 
 function emClickSchedule(){
   emSetScheduleUI(!emScheduleOn);
@@ -877,14 +967,17 @@ function emOpenModal(q, editId){
     const t = emTasks.find(x=>x.id===editId); if(!t)return;
     $('em-modal-title').textContent = 'Bearbeiten';
     $('em-name').value = t.name; $('em-note').value = t.note||''; $('em-quad').value = t.quad;
+    emSelRoles = Array.isArray(t.roles) ? [...t.roles] : [];
     const sched = !!(t.taskType && t.sourceId);
     emSetScheduleUI(sched);
     if(sched) emSetType(t.taskType||'once');
   } else {
     $('em-modal-title').textContent = 'Neue Aufgabe';
     $('em-name').value = ''; $('em-note').value = '';
+    emSelRoles = emRoleFilter ? [emRoleFilter] : [];  // preselect if filter active
     if(q) $('em-quad').value = q;
   }
+  emBuildRolePicker();
   openOverlay('em-modal'); setTimeout(()=>$('em-name').focus(),60);
 }
 
@@ -896,6 +989,7 @@ async function emSave(){
     const t=emTasks.find(x=>x.id===emEditId); if(!t)return;
     const oldName=t.name;
     t.name=n; t.note=$('em-note').value.trim(); t.quad=quad;
+    t.roles = [...emSelRoles];
     if(emScheduleOn){
       t.taskType=emTaskType;
       if(!t.sourceId) t.sourceId=uid();
@@ -913,7 +1007,9 @@ async function emSave(){
   } else {
     const sourceId=emScheduleOn?uid():null;
     const row={id:uid(),name:n,note:$('em-note').value.trim(),quad,done:false,
-               taskType:emScheduleOn?emTaskType:null,sourceId,createdAt:todayStr()};
+               taskType:emScheduleOn?emTaskType:null,sourceId,
+               roles:[...emSelRoles],
+               createdAt:todayStr()};
     emTasks.push(row); await dbUpsert('em_tasks',row);
     if(emScheduleOn&&emTaskType==='once'){
       ovData.todos=ovData.todos||[];
@@ -955,18 +1051,35 @@ function emIsInRoutine(t){
 }
 
 function emRender(){
+  /* Ensure role filter bar reflects current identities (may have loaded after emLoad) */
+  emBuildRoleFilter();
   const now=new Date();
+  /* Build id → identity map for chip rendering */
+  const identMap = {};
+  (pfIdents||[]).forEach(i=>{ identMap[i.id] = i; });
+
   ['q1','q2','q3','q4'].forEach(q=>{
-    $('em-'+q).innerHTML=emTasks.filter(t=>t.quad===q).map(t=>{
+    const filtered = emTasks.filter(t=>{
+      if(t.quad !== q) return false;
+      if(emRoleFilter && !(t.roles||[]).includes(emRoleFilter)) return false;
+      return true;
+    });
+    $('em-'+q).innerHTML=filtered.map(t=>{
       const inRt=emIsInRoutine(t);
       const days=t.createdAt?Math.floor((now-new Date(t.createdAt))/86400000):0;
       const overdue=q==='q1'&&days>7&&!t.done;
+      const roleChips = (t.roles||[]).map(rid=>{
+        const i = identMap[rid]; if(!i) return '';
+        const C = PF_COLORS[i.color||0];
+        return `<span class="em-role-chip" style="background:${C.bg};color:${C.ring};">${i.name}</span>`;
+      }).join('');
       return `<div class="em-task${inRt?' in-routine':''}${overdue?' overdue':''}">
         <div class="chk${t.done?' done':''}" onclick="emToggle('${t.id}')"></div>
         <div style="flex:1;min-width:0;">
           <div class="em-task-text${t.done?' done':''}">${t.name}</div>
           ${t.note?`<div class="muted" style="margin-top:1px;">${t.note}</div>`:''}
           <div class="em-task-badges">
+            ${roleChips}
             ${inRt?`<span class="em-task-badge" style="background:var(--accent-bg);color:var(--accent);">In Routine</span>`:''}
             ${overdue?`<span class="em-task-badge" style="background:#FCEBEB;color:#791F1F;">Überfällig</span>`:''}
             ${t.taskType==='repeat'&&t.sourceId?`<span class="em-task-badge" style="background:var(--blue-bg);color:var(--blue);">Wiederkehrend</span>`:''}
@@ -1138,7 +1251,21 @@ async function lstDelList(id){ confirm2('Liste löschen?','Alle Einträge werden
 async function lstClearList(id){ confirm2('Liste leeren?','Alle Einträge werden entfernt. Die Liste selbst bleibt erhalten.',async()=>{ const l=lstLists.find(x=>x.id===id); if(!l)return; l.items=[]; await dbUpsert('lst_lists',l); lstRender(); }); }
 function lstStartRename(id){ lstRenaming=id; lstRender(); }
 async function lstFinishRename(id,val){ const l=lstLists.find(x=>x.id===id); if(l&&val.trim()){l.name=val.trim();await dbUpsert('lst_lists',l);} lstRenaming=null; lstRender(); }
-async function lstAddItem(lid){ const inp=$('lst-inp-'+lid); const n=inp.value.trim(); if(!n)return inp.focus(); const l=lstLists.find(x=>x.id===lid); if(!l)return; l.items.push({id:uid(),text:n,done:false}); inp.value=''; await dbUpsert('lst_lists',l); lstRender(); }
+async function lstAddItem(lid){
+  const inp = $('lst-inp-'+lid);
+  const n = inp.value.trim();
+  if(!n) return inp.focus();
+  const l = lstLists.find(x=>x.id===lid);
+  if(!l) return;
+  l.items.push({id:uid(), text:n, done:false});
+  await dbUpsert('lst_lists', l);
+  lstRender();
+  /* Re-focus input after DOM rebuild so user can type next item immediately */
+  setTimeout(()=>{
+    const next = $('lst-inp-'+lid);
+    if(next){ next.focus(); next.value=''; }
+  }, 0);
+}
 async function lstToggle(lid,iid){ const l=lstLists.find(x=>x.id===lid); const it=l?.items.find(x=>x.id===iid); if(it){it.done=!it.done;await dbUpsert('lst_lists',l);lstRender();} }
 async function lstDelItem(lid,iid){ const l=lstLists.find(x=>x.id===lid); if(!l)return; l.items=l.items.filter(x=>x.id!==iid); await dbUpsert('lst_lists',l); lstRender(); }
 function lstStartEditItem(lid,iid){ lstEditItemId=iid; lstRender(); }
@@ -1206,17 +1333,7 @@ function dyNewEntry(){
   /* Pre-fill if entry for today already exists */
   const existing=dyEntries.find(e=>e.date===today);
   if(existing){
-    ['events','thoughts','ideas','gratitude','tomorrow'].forEach(k=>{ const el=$('dy-'+k.replace('gratitude','grat')); if(el)el.value=existing[k]||''; });
-    $('dy-events').value=existing.events||'';
-    $('dy-thoughts').value=existing.thoughts||'';
-    $('dy-ideas').value=existing.ideas||'';
-    $('dy-grat').value=existing.gratitude||'';
-    $('dy-tomorrow').value=existing.tomorrow||'';
-    $('dy-routine-pct').value=existing.routinePct||existing.routinepct||0;
-    $('dy-routine-pct-display').textContent=(existing.routinePct||existing.routinepct||0)+'%';
-    document.querySelectorAll('#dy-mood-row .mood-btn').forEach(b=>b.classList.toggle('sel',b.dataset.m===existing.mood));
-    dyMood=existing.mood||'';
-    dyOnePctSel=[...(existing.onePct||[])];
+    dyFillModal(existing);
   } else {
     ['dy-events','dy-thoughts','dy-ideas','dy-grat','dy-tomorrow'].forEach(id=>$(id).value='');
     document.querySelectorAll('#dy-mood-row .mood-btn').forEach(b=>b.classList.remove('sel'));
@@ -1230,23 +1347,56 @@ function dyNewEntry(){
   openOverlay('dy-modal'); setTimeout(()=>$('dy-events').focus(),60);
 }
 
+function dyEdit(id){
+  const e = dyEntries.find(x=>x.id===id);
+  if(!e) return;
+  $('dy-date').value = e.date;
+  dyFillModal(e);
+  dyBuildOnePctChips();
+  document.querySelectorAll('.one-pct-chip').forEach(c=>{if(dyOnePctSel.includes(c.dataset.kw))c.classList.add('sel');});
+  openOverlay('dy-modal'); setTimeout(()=>$('dy-events').focus(),60);
+}
+
+function dyFillModal(e){
+  $('dy-events').value   = e.events   || '';
+  $('dy-thoughts').value = e.thoughts || '';
+  $('dy-ideas').value    = e.ideas    || '';
+  $('dy-grat').value     = e.gratitude|| '';
+  $('dy-tomorrow').value = e.tomorrow || '';
+  const pct = e.routinePct ?? e.routine_pct ?? 0;
+  $('dy-routine-pct').value = pct;
+  $('dy-routine-pct-display').textContent = pct + '%';
+  document.querySelectorAll('#dy-mood-row .mood-btn').forEach(b=>b.classList.toggle('sel', b.dataset.m===e.mood));
+  dyMood = e.mood || '';
+  dyOnePctSel = [...(e.onePct || e.one_pct || [])];
+}
+
 async function dySave(){
   const d=$('dy-date').value; if(!d)return $('dy-date').focus();
   const pct=parseInt($('dy-routine-pct').value)||0;
   /* Stable ID: one entry per date per user — reuse existing id if same date */
   const existing=dyEntries.find(e=>e.date===d);
   const stableId=existing?.id||('dy_'+currentUser.id.slice(0,8)+'_'+d);
-  const row={id:stableId,date:d,mood:dyMood,
-    routinepct:pct, routinePct:pct, "onePct":dyOnePctSel, onePct:dyOnePctSel,
-    events:$('dy-events').value.trim(),thoughts:$('dy-thoughts').value.trim(),
-    ideas:$('dy-ideas').value.trim(),gratitude:$('dy-grat').value.trim(),tomorrow:$('dy-tomorrow').value.trim()};
+  const row={
+    id: stableId,
+    date: d,
+    mood: dyMood,
+    routinePct: pct,
+    onePct: [...dyOnePctSel],
+    events:    $('dy-events').value.trim(),
+    thoughts:  $('dy-thoughts').value.trim(),
+    ideas:     $('dy-ideas').value.trim(),
+    gratitude: $('dy-grat').value.trim(),
+    tomorrow:  $('dy-tomorrow').value.trim()
+  };
   const idx=dyEntries.findIndex(e=>e.date===d);
   if(idx>=0) dyEntries[idx]=row; else dyEntries.unshift(row);
   dyEntries.sort((a,b)=>b.date.localeCompare(a.date));
   dyActive=row.id;
-  /* Also persist to localStorage as safety backup */
+  /* Local backup as safety net */
   lset('dy_backup_'+d, row);
-  await dbUpsert('dy_entries',row); dyRenderSidebar(); dyRenderMain(); closeOverlay('dy-modal');
+  await dbUpsert('dy_entries',row);
+  dyRenderSidebar(); dyRenderMain(); closeOverlay('dy-modal');
 }
 async function dyDel(id){ confirm2('Eintrag löschen?','Wird dauerhaft entfernt.',async()=>{ dyEntries=dyEntries.filter(e=>e.id!==id); dyActive=dyEntries[0]?.id||null; await dbDelete('dy_entries',id); dyRenderSidebar(); dyRenderMain(); }); }
 
@@ -1288,7 +1438,7 @@ function dyRenderMain(){
           ${cur.onePct?.length?`<span style="font-size:12px;color:var(--gold);">+1%: ${cur.onePct.join(', ')}</span>`:''}
         </div>
       </div>
-      <button class="btn-ghost" onclick="dyDel('${cur.id}')">Löschen</button>
+      <div style="display:flex;gap:4px;"><button class="btn-sec" onclick="dyEdit('${cur.id}')" style="padding:6px 12px;">Bearbeiten</button><button class="btn-ghost" onclick="dyDel('${cur.id}')">Löschen</button></div>
     </div>
     ${DY_CATS.filter(c=>cur[c.key]).map(c=>`<div class="cat-section"><div class="cat-label">${c.label}</div><div class="cat-content">${cur[c.key]}</div></div>`).join('')}
     ${DY_CATS.every(c=>!cur[c.key])?'<div class="muted">Noch keine Inhalte.</div>':''}
@@ -1328,9 +1478,9 @@ function pfOpenIdentModal(){
 async function pfSaveIdent(){
   const n=$('pf-iname').value.trim(); if(!n)return $('pf-iname').focus();
   const row={id:uid(),name:n,why:$('pf-iwhy').value.trim(),type:pfIdentType,habits:$('pf-ihabs').value.split(',').map(h=>h.trim()).filter(Boolean),color:pfSelIColor};
-  pfIdents.push(row); await dbUpsert('pf_idents',row); pfRender(); closeOverlay('pf-ident-modal');
+  pfIdents.push(row); await dbUpsert('pf_idents',row); pfRender(); emRender(); closeOverlay('pf-ident-modal');
 }
-async function pfDelIdent(id){ confirm2('Identität löschen?','Wird entfernt.',async()=>{ pfIdents=pfIdents.filter(x=>x.id!==id); await dbDelete('pf_idents',id); pfRender(); }); }
+async function pfDelIdent(id){ confirm2('Identität löschen?','Wird entfernt.',async()=>{ pfIdents=pfIdents.filter(x=>x.id!==id); await dbDelete('pf_idents',id); pfRender(); emRender(); }); }
 
 function pfHabitScore(habitName){
   const all=[...(rtData.work?.blocks||[]),...(rtData.free?.blocks||[])];
