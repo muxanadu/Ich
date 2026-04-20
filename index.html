@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>ich. — Dashboard</title>
+<title>Nexus — Personal Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2318180f'/%3E%3Cline x1='19' y1='48' x2='19' y2='16' stroke='%23fff' stroke-width='7' stroke-linecap='round'/%3E%3Cline x1='45' y1='48' x2='45' y2='16' stroke='%23fff' stroke-width='7' stroke-linecap='round'/%3E%3Cline x1='19' y1='16' x2='45' y2='48' stroke='%23fff' stroke-width='7' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%2352b788'/%3E%3C/svg%3E"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
@@ -286,7 +287,7 @@ textarea{resize:vertical;min-height:68px;line-height:1.6;}
 <!-- ══ SETUP GUIDE ══ -->
 <div id="setup-screen">
   <div class="setup-box">
-    <div style="font-family:var(--serif);font-size:28px;margin-bottom:.25rem;">ich. einrichten</div>
+    <div style="font-family:var(--serif);font-size:28px;margin-bottom:.25rem;">Nexus einrichten</div>
     <p style="font-size:13px;color:var(--txt2);margin-bottom:2rem;">Folge diesen Schritten einmalig, um die App auf allen deinen Geräten zu nutzen.</p>
 
     <div class="setup-step">
@@ -349,8 +350,8 @@ const ALLOWED_EMAILS = ['deine@email.de', 'zweite@email.de'];</pre>
 <!-- ══ AUTH ══ -->
 <div id="auth-screen">
   <div class="auth-box">
-    <div class="auth-brand">ich.</div>
-    <div class="auth-sub">Dein persönliches Dashboard</div>
+    <div class="auth-brand" style="display:flex;align-items:center;justify-content:center;gap:12px;"><svg width="36" height="36" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="14" fill="#18180f"/><line x1="19" y1="48" x2="19" y2="16" stroke="#fff" stroke-width="7" stroke-linecap="round"/><line x1="45" y1="48" x2="45" y2="16" stroke="#fff" stroke-width="7" stroke-linecap="round"/><line x1="19" y1="16" x2="45" y2="48" stroke="#fff" stroke-width="7" stroke-linecap="round"/><circle cx="32" cy="32" r="5" fill="#52b788"/></svg>Nexus</div>
+    <div class="auth-sub">Personal Dashboard</div>
     <div id="auth-form-login">
       <div class="fg"><label>E-Mail</label><input type="email" id="login-email" placeholder="deine@email.de" autocomplete="email"/></div>
       <div class="fg"><label>Passwort</label><input type="password" id="login-pw" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
@@ -383,7 +384,7 @@ const ALLOWED_EMAILS = ['deine@email.de', 'zweite@email.de'];</pre>
 </div>
 
 <nav>
-  <span class="nav-brand">ich.</span>
+  <span class="nav-brand" style="display:flex;align-items:center;gap:8px;"><svg width="24" height="24" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="14" fill="#18180f"/><line x1="19" y1="48" x2="19" y2="16" stroke="#fff" stroke-width="7" stroke-linecap="round"/><line x1="45" y1="48" x2="45" y2="16" stroke="#fff" stroke-width="7" stroke-linecap="round"/><line x1="19" y1="16" x2="45" y2="48" stroke="#fff" stroke-width="7" stroke-linecap="round"/><circle cx="32" cy="32" r="5" fill="#52b788"/></svg>Nexus</span>
   <button class="nav-tab active" onclick="goTo(0)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg><span class="nav-label">Matrix</span></button>
   <button class="nav-tab" onclick="goTo(1)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="8" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="nav-label">Übersicht</span></button>
   <button class="nav-tab" onclick="goTo(2)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg><span class="nav-label">Routine</span></button>
@@ -530,7 +531,7 @@ const ALLOWED_EMAILS = ['deine@email.de', 'zweite@email.de'];</pre>
   <h3>Tagebuch-Eintrag</h3>
   <div class="fg"><label>Datum</label><input type="date" id="dy-date"/></div>
   <div class="fg"><label>Stimmung</label><div class="mood-row" id="dy-mood-row"><button class="mood-btn" data-m="Sehr gut" onclick="dySelMood(this)">Sehr gut</button><button class="mood-btn" data-m="Gut" onclick="dySelMood(this)">Gut</button><button class="mood-btn" data-m="Neutral" onclick="dySelMood(this)">Neutral</button><button class="mood-btn" data-m="Schwierig" onclick="dySelMood(this)">Schwierig</button><button class="mood-btn" data-m="Anstrengend" onclick="dySelMood(this)">Anstrengend</button></div></div>
-  <div class="fg"><label>Routine heute erledigt</label><div class="routine-check-list" id="dy-routine-checks"></div><div style="margin-top:6px;font-size:12px;color:var(--txt3);">Erfüllt: <span id="dy-routine-pct-display" style="color:var(--accent);font-weight:500;">0%</span></div></div>
+  <div class="fg"><label>Routine erfüllt (%)</label><div style="display:flex;gap:12px;align-items:center;margin-top:6px;"><input type="range" id="dy-routine-pct" min="0" max="100" step="10" value="0" style="flex:1;" oninput="$('dy-routine-pct-display').textContent=this.value+'%'"/><span id="dy-routine-pct-display" style="font-size:15px;font-weight:500;color:var(--accent);min-width:42px;">0%</span></div></div>
   <div class="fg"><label>Habe ich mich heute um 1% verbessert?</label><div class="one-pct-chips" id="dy-one-pct-chips"></div><div style="display:flex;gap:8px;margin-top:8px;"><input type="text" id="dy-one-pct-new" placeholder="Neues Stichwort…" style="flex:1;"/><button class="btn-sec" onclick="dyAddOnePct()">+</button></div></div>
   <div class="fg"><label>Wichtige Ereignisse</label><textarea id="dy-events" placeholder="Was ist heute passiert?"></textarea></div>
   <div class="fg"><label>Gedanken &amp; Gefühle</label><textarea id="dy-thoughts" placeholder="Wie fühle ich mich? Warum?"></textarea></div>
@@ -580,8 +581,8 @@ const SUPABASE_KEY  = 'sb_publishable_gapZytP_dZoFDqCsrws5Lg_4TMCK37u';
 
 /* Whitelist: nur diese E-Mails dürfen sich registrieren und einloggen */
 const ALLOWED_EMAILS = [
-  'abdo.mo@web.de',
-  'thuraya02@web.de'
+  'deine@email.de',
+  'zweite@email.de'
   /* weitere E-Mails hier einfügen */
 ];
 
@@ -1134,6 +1135,7 @@ async function lstLoad(){
 function lstNewList(){ $('lst-lname').value=''; openOverlay('lst-modal'); setTimeout(()=>$('lst-lname').focus(),60); }
 async function lstSaveList(){ const n=$('lst-lname').value.trim(); if(!n)return; const row={id:uid(),name:n,items:[]}; lstLists.push(row); lstActive=row.id; await dbUpsert('lst_lists',row); lstRender(); closeOverlay('lst-modal'); }
 async function lstDelList(id){ confirm2('Liste löschen?','Alle Einträge werden entfernt.',async()=>{ lstLists=lstLists.filter(l=>l.id!==id); lstActive=lstLists[0]?.id||null; await dbDelete('lst_lists',id); lstRender(); }); }
+async function lstClearList(id){ confirm2('Liste leeren?','Alle Einträge werden entfernt. Die Liste selbst bleibt erhalten.',async()=>{ const l=lstLists.find(x=>x.id===id); if(!l)return; l.items=[]; await dbUpsert('lst_lists',l); lstRender(); }); }
 function lstStartRename(id){ lstRenaming=id; lstRender(); }
 async function lstFinishRename(id,val){ const l=lstLists.find(x=>x.id===id); if(l&&val.trim()){l.name=val.trim();await dbUpsert('lst_lists',l);} lstRenaming=null; lstRender(); }
 async function lstAddItem(lid){ const inp=$('lst-inp-'+lid); const n=inp.value.trim(); if(!n)return inp.focus(); const l=lstLists.find(x=>x.id===lid); if(!l)return; l.items.push({id:uid(),text:n,done:false}); inp.value=''; await dbUpsert('lst_lists',l); lstRender(); }
@@ -1147,6 +1149,7 @@ function lstRender(){
     <div class="lst-sidebar-item${l.id===lstActive?' active':''}" onclick="lstActive='${l.id}';lstRenaming=null;lstRender();">
       ${lstRenaming===l.id?`<input class="rename-inp" value="${l.name}" id="ri-${l.id}" onblur="lstFinishRename('${l.id}',this.value)" onkeydown="if(event.key==='Enter')lstFinishRename('${l.id}',this.value)" onclick="event.stopPropagation()"/>`:`<span class="lst-name">${l.name}</span>`}
       <button class="del-btn" onclick="event.stopPropagation();lstStartRename('${l.id}')" style="font-size:11px;" title="Umbenennen">✎</button>
+      <button class="del-btn" onclick="event.stopPropagation();lstClearList('${l.id}')" style="font-size:11px;" title="Liste leeren">⊘</button>
       <button class="del-btn" onclick="event.stopPropagation();lstDelList('${l.id}')">✕</button>
     </div>`).join('');
   if(lstRenaming){ const i=$('ri-'+lstRenaming); if(i){i.focus();i.select();} }
@@ -1168,12 +1171,17 @@ function lstRender(){
    TAGEBUCH
 ═══════════════════════════════════════════════ */
 let dyEntries=[], dyActive=null, dyMood='', dyMode='write', dyReadTab='day', dyReadCatFilter=null, dyTreeState={};
-let dyRoutineChecks={}, dyOnePctSel=[], dyOnePctKeywords=[];
+let dyOnePctSel=[], dyOnePctKeywords=[];
 const DY_CATS=[{key:'events',label:'Wichtige Ereignisse'},{key:'thoughts',label:'Gedanken & Gefühle'},{key:'ideas',label:'Neue Ideen'},{key:'gratitude',label:'Dankbarkeit'},{key:'tomorrow',label:'Vorhaben für morgen'}];
 
 async function dyLoad(){
   dyEntries=await dbGet('dy_entries');
   dyEntries.sort((a,b)=>b.date.localeCompare(a.date));
+  /* Safety: if Supabase returned nothing but we have local backups, surface a warning */
+  if(dyEntries.length===0 && !useLocal){
+    const localKeys=Object.keys(localStorage).filter(k=>k.startsWith('dy_backup_')||k.includes('_dy_entries'));
+    if(localKeys.length>0) console.warn('Supabase returned 0 diary entries but localStorage has backups. Check RLS policies.');
+  }
   dyActive=dyEntries[0]?.id||null;
   const kws=await dbGetSingle('one_pct_keywords'); dyOnePctKeywords=kws||[];
   dyRenderSidebar(); dyRenderMain();
@@ -1183,21 +1191,7 @@ function dySelMood(btn){ document.querySelectorAll('#dy-mood-row .mood-btn').for
 function dySetMode(m,btn){ dyMode=m; document.querySelectorAll('.dy-mode-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); $('dy-write-mode').style.display=m==='write'?'':'none'; $('dy-read-mode').style.display=m==='read'?'':'none'; if(m==='read')dyRenderRead(); }
 function dySetReadTab(t,btn){ dyReadTab=t; document.querySelectorAll('.read-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); dyRenderRead(); }
 
-function dyBuildRoutineChecks(){
-  const blocks=rtData[rtDay]?.blocks||[];
-  dyRoutineChecks={};
-  if(!blocks.length){ $('dy-routine-checks').innerHTML='<div class="muted">Keine Routine-Blöcke definiert.</div>'; $('dy-routine-pct-display').textContent='0%'; return; }
-  blocks.forEach(b=>{ dyRoutineChecks[b.id]={name:b.name,checked:false}; });
-  $('dy-routine-checks').innerHTML=blocks.map(b=>`<div class="rc-item" id="rc-${b.id}" onclick="dyToggleRc('${b.id}')"><div class="sq-chk" id="rc-chk-${b.id}"></div><span>${b.name}</span>${b.why?`<span class="muted" style="margin-left:auto;font-size:11px;">${b.why}</span>`:''}</div>`).join('');
-  $('dy-routine-pct-display').textContent='0%';
-}
-function dyToggleRc(id){
-  if(!dyRoutineChecks[id])return;
-  dyRoutineChecks[id].checked=!dyRoutineChecks[id].checked;
-  const chk=$('rc-chk-'+id); if(chk)chk.classList.toggle('done',dyRoutineChecks[id].checked);
-  const vals=Object.values(dyRoutineChecks);
-  $('dy-routine-pct-display').textContent=Math.round(vals.filter(v=>v.checked).length/vals.length*100)+'%';
-}
+/* routine checklist removed — slider used instead */
 
 function dyBuildOnePctChips(){
   dyOnePctSel=[];
@@ -1207,27 +1201,51 @@ function dyToggleOnePct(btn){ const kw=btn.dataset.kw; btn.classList.toggle('sel
 async function dyAddOnePct(){ const v=$('dy-one-pct-new').value.trim(); if(!v)return; if(!dyOnePctKeywords.includes(v)){dyOnePctKeywords.push(v);await dbSetSingle('one_pct_keywords',dyOnePctKeywords);} dyOnePctSel.push(v); $('dy-one-pct-new').value=''; dyBuildOnePctChips(); document.querySelectorAll('.one-pct-chip').forEach(c=>{if(dyOnePctSel.includes(c.dataset.kw))c.classList.add('sel');}); }
 
 function dyNewEntry(){
-  $('dy-date').value=todayStr();
-  ['dy-events','dy-thoughts','dy-ideas','dy-grat','dy-tomorrow'].forEach(id=>$(id).value='');
-  document.querySelectorAll('#dy-mood-row .mood-btn').forEach(b=>b.classList.remove('sel'));
-  dyMood=''; dyBuildRoutineChecks(); dyBuildOnePctChips();
+  const today=todayStr();
+  $('dy-date').value=today;
+  /* Pre-fill if entry for today already exists */
+  const existing=dyEntries.find(e=>e.date===today);
+  if(existing){
+    ['events','thoughts','ideas','gratitude','tomorrow'].forEach(k=>{ const el=$('dy-'+k.replace('gratitude','grat')); if(el)el.value=existing[k]||''; });
+    $('dy-events').value=existing.events||'';
+    $('dy-thoughts').value=existing.thoughts||'';
+    $('dy-ideas').value=existing.ideas||'';
+    $('dy-grat').value=existing.gratitude||'';
+    $('dy-tomorrow').value=existing.tomorrow||'';
+    $('dy-routine-pct').value=existing.routinePct||existing.routinepct||0;
+    $('dy-routine-pct-display').textContent=(existing.routinePct||existing.routinepct||0)+'%';
+    document.querySelectorAll('#dy-mood-row .mood-btn').forEach(b=>b.classList.toggle('sel',b.dataset.m===existing.mood));
+    dyMood=existing.mood||'';
+    dyOnePctSel=[...(existing.onePct||[])];
+  } else {
+    ['dy-events','dy-thoughts','dy-ideas','dy-grat','dy-tomorrow'].forEach(id=>$(id).value='');
+    document.querySelectorAll('#dy-mood-row .mood-btn').forEach(b=>b.classList.remove('sel'));
+    dyMood='';
+    $('dy-routine-pct').value=0;
+    $('dy-routine-pct-display').textContent='0%';
+    dyOnePctSel=[];
+  }
+  dyBuildOnePctChips();
+  document.querySelectorAll('.one-pct-chip').forEach(c=>{if(dyOnePctSel.includes(c.dataset.kw))c.classList.add('sel');});
   openOverlay('dy-modal'); setTimeout(()=>$('dy-events').focus(),60);
 }
 
 async function dySave(){
   const d=$('dy-date').value; if(!d)return $('dy-date').focus();
-  const vals=Object.values(dyRoutineChecks);
-  const pct=vals.length?Math.round(vals.filter(v=>v.checked).length/vals.length*100):0;
-  /* Use exact DB column names: routinepct (lowercase) and onePct (quoted in DB) */
-  const row={id:uid(),date:d,mood:dyMood,
-    routinepct:pct, "onePct":dyOnePctSel,
-    routinePct:pct, onePct:dyOnePctSel,
+  const pct=parseInt($('dy-routine-pct').value)||0;
+  /* Stable ID: one entry per date per user — reuse existing id if same date */
+  const existing=dyEntries.find(e=>e.date===d);
+  const stableId=existing?.id||('dy_'+currentUser.id.slice(0,8)+'_'+d);
+  const row={id:stableId,date:d,mood:dyMood,
+    routinepct:pct, routinePct:pct, "onePct":dyOnePctSel, onePct:dyOnePctSel,
     events:$('dy-events').value.trim(),thoughts:$('dy-thoughts').value.trim(),
     ideas:$('dy-ideas').value.trim(),gratitude:$('dy-grat').value.trim(),tomorrow:$('dy-tomorrow').value.trim()};
-  const existing=dyEntries.findIndex(e=>e.date===d);
-  if(existing>=0) dyEntries[existing]=row; else dyEntries.unshift(row);
+  const idx=dyEntries.findIndex(e=>e.date===d);
+  if(idx>=0) dyEntries[idx]=row; else dyEntries.unshift(row);
   dyEntries.sort((a,b)=>b.date.localeCompare(a.date));
   dyActive=row.id;
+  /* Also persist to localStorage as safety backup */
+  lset('dy_backup_'+d, row);
   await dbUpsert('dy_entries',row); dyRenderSidebar(); dyRenderMain(); closeOverlay('dy-modal');
 }
 async function dyDel(id){ confirm2('Eintrag löschen?','Wird dauerhaft entfernt.',async()=>{ dyEntries=dyEntries.filter(e=>e.id!==id); dyActive=dyEntries[0]?.id||null; await dbDelete('dy_entries',id); dyRenderSidebar(); dyRenderMain(); }); }
@@ -1266,7 +1284,7 @@ function dyRenderMain(){
       <div><div style="font-family:var(--serif);font-size:22px;">${fmtDate(cur.date)}</div>
         <div style="display:flex;gap:10px;margin-top:4px;flex-wrap:wrap;">
           ${cur.mood?`<span style="font-size:12px;color:${MC[cur.mood]||'var(--txt2)'};">${cur.mood}</span>`:''}
-          ${cur.routinePct!==undefined?`<span style="font-size:12px;color:var(--txt3);">Routine: <strong style="color:var(--accent);">${cur.routinePct}%</strong></span>`:''}
+          ${(cur.routinePct||cur.routinepct)!==undefined?`<span style="font-size:12px;color:var(--txt3);">Routine: <strong style="color:var(--accent);">${cur.routinePct??cur.routinepct??0}%</strong></span>`:''}
           ${cur.onePct?.length?`<span style="font-size:12px;color:var(--gold);">+1%: ${cur.onePct.join(', ')}</span>`:''}
         </div>
       </div>
@@ -1327,7 +1345,7 @@ async function pfRender(){
   if(!pfIdents.length) await pfLoadIdents();
   const today=new Date();
   const last30=Array.from({length:30},(_,i)=>{ const d=new Date(today); d.setDate(d.getDate()-i); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; });
-  const dayData=last30.map(ds=>{ const e=dyEntries.find(x=>x.date===ds); return{date:ds,hasDiary:!!e,pts:e?50+Math.round(((e.routinePct||0)/100)*50):0,routinePct:e?.routinePct||0}; });
+  const dayData=last30.map(ds=>{ const e=dyEntries.find(x=>x.date===ds); const rp=e?(e.routinePct??e.routinepct??0):0; return{date:ds,hasDiary:!!e,pts:e?50+Math.round((rp/100)*50):0,routinePct:rp}; });
   const totalPts=dayData.reduce((s,d)=>s+d.pts,0);
   const diaryDays=dayData.filter(d=>d.hasDiary).length;
   let streak=0; for(const d of dayData){ if(d.hasDiary)streak++; else break; }
