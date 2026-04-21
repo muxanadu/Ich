@@ -2119,8 +2119,6 @@ function rtRenderCalendar(){
   /* Dynamic range: wake-1h → sleep+1h (clamp 0-1440) */
   const startMin=Math.max(0, wkM-60);
   const endMin=Math.min(1440, slM>wkM ? slM+60 : 1440);
-  const rangeMin=endMin-startMin;
-  const height=(rangeMin/60)*PX_PER_HOUR;
 
   /* Only blocks active today */
   const dayBlocks=rtBlocks.filter(b=>{
@@ -2133,108 +2131,156 @@ function rtRenderCalendar(){
   const e=dyEntries.find(x=>x.date===todayStr());
   const status=e?.blockStatus||{};
 
+  /* ═══ ADAPTIVE SCALING ═══
+     Jede Stunde bekommt einen Skalier-Faktor basierend auf Dichte.
+     Faktor 1 = 60px/h (Standard), Faktor 2 = 120px/h (gestreckt).
+     Auslöser: ≥2 Blöcke in der Stunde ODER mind. 1 Block ≤20min Dauer,
+     der in dieser Stunde beginnt. */
+  const MIN_BLOCK_DUR=20;   // kürzer als das = gilt als kurz
+  const BASE_PX_H=60;       // normale Skala
+  const STRETCH=2;          // Skalier-Faktor bei Bedarf (kann angepasst werden)
+
+  const scalePerHour={};  // hour → scaleFactor
+  for(let h=Math.floor(startMin/60); h<Math.ceil(endMin/60); h++){
+    const hStart=h*60, hEnd=hStart+60;
+    const blocksStartingHere=dayBlocks.filter(b=>{
+      const bf=timeToMin(b.from);
+      return bf>=hStart && bf<hEnd;
+    });
+    const blocksOverlappingHere=dayBlocks.filter(b=>{
+      const bf=timeToMin(b.from), bt=timeToMin(b.to);
+      return bf<hEnd && bt>hStart;
+    });
+    const hasShort=blocksStartingHere.some(b=>(timeToMin(b.to)-timeToMin(b.from))<MIN_BLOCK_DUR);
+    const hasMany=blocksOverlappingHere.length>=3;
+    const hasClash=blocksStartingHere.length>=2;
+    scalePerHour[h]=(hasShort||hasMany||hasClash)?STRETCH:1;
+  }
+
+  /* Cumulative minute-to-y lookup, built walking through range minute-by-hour */
+  const hourOffsets={};  // hour → y-offset at top of this hour
+  let yCursor=0;
+  for(let h=Math.floor(startMin/60); h<=Math.ceil(endMin/60); h++){
+    hourOffsets[h]=yCursor;
+    const factor=scalePerHour[h]||1;
+    yCursor+=BASE_PX_H*factor;
+  }
+  /* Total canvas height, less the unused portion at the very start of the first hour */
+  const firstHour=Math.floor(startMin/60);
+  const firstHourOffsetMin=startMin-firstHour*60;  // minutes already passed in first hour
+  const firstHourFactor=scalePerHour[firstHour]||1;
+  const topChop=firstHourOffsetMin*(BASE_PX_H*firstHourFactor/60);
+  const lastHour=Math.ceil(endMin/60);
+  const lastHourOffsetMin=endMin-(lastHour-1)*60;  // minutes used in last hour
+  const lastHourFactor=scalePerHour[lastHour-1]||1;
+  const bottomChop=(60-lastHourOffsetMin)*(BASE_PX_H*lastHourFactor/60);
+  const height=yCursor-topChop-bottomChop;
+
+  /* Main projection function: minute → y-pixel */
+  function minToY(m){
+    const h=Math.floor(m/60);
+    const offInHour=m-h*60;
+    const factor=scalePerHour[h]||1;
+    return (hourOffsets[h]||0) + offInHour*(BASE_PX_H*factor/60) - topChop;
+  }
+
   /* Hour labels */
   let hourLabels='';
   for(let h=Math.ceil(startMin/60); h<=Math.floor(endMin/60); h++){
-    const y=(h*60-startMin)/MIN_PER_PX;
+    const y=minToY(h*60);
     hourLabels+=`<div class="cal-hour-label" style="top:${y}px;">${pad(h)}:00</div>`;
   }
-  /* Hour lines */
+  /* Hour lines (full) */
   let hourLines='';
   for(let h=Math.ceil(startMin/60); h<=Math.floor(endMin/60); h++){
-    const y=(h*60-startMin)/MIN_PER_PX;
+    const y=minToY(h*60);
     hourLines+=`<div class="cal-hour-line" style="top:${y}px;"></div>`;
   }
+  /* Half-hour lines (dashed) — nur in normal-skalierten Stunden, um nicht zu überfrachten */
   for(let m=Math.ceil(startMin/30)*30; m<=endMin; m+=30){
     if(m%60===0) continue;
-    const y=(m-startMin)/MIN_PER_PX;
+    const y=minToY(m);
     hourLines+=`<div class="cal-hour-line dashed" style="top:${y}px;"></div>`;
   }
 
-  /* WORK TIME OVERLAY (background context) */
+  /* WORK TIME OVERLAY */
   let workHtml='';
   const showWork=rtWork.enabled && (rtWork.weekdays||[]).includes(wd);
   if(showWork){
     const ws=timeToMin(rtWork.start), we=timeToMin(rtWork.end);
     const wsClamp=Math.max(ws,startMin), weClamp=Math.min(we,endMin);
     if(weClamp>wsClamp){
-      const top=(wsClamp-startMin)/MIN_PER_PX;
-      const h=(weClamp-wsClamp)/MIN_PER_PX;
+      const top=minToY(wsClamp);
+      const h=minToY(weClamp)-top;
       workHtml+=`<div class="cal-worktime" style="top:${top}px;height:${h}px;"><div class="cal-worktime-label">Arbeit ${rtWork.start}–${rtWork.end}</div></div>`;
     }
-    /* Breaks */
     (rtWork.breaks||[]).forEach(br=>{
       const bs=timeToMin(br.start), be=timeToMin(br.end);
       const bsC=Math.max(bs,startMin), beC=Math.min(be,endMin);
       if(beC>bsC){
-        const top=(bsC-startMin)/MIN_PER_PX;
-        const h=(beC-bsC)/MIN_PER_PX;
+        const top=minToY(bsC);
+        const h=minToY(beC)-top;
         workHtml+=`<div class="cal-break" style="top:${top}px;height:${h}px;"><div class="cal-break-label">Pause ${br.start}–${br.end}</div></div>`;
       }
     });
   }
 
-  /* CLUSTER ALGORITHM for overlapping blocks */
+  /* ═══ CLUSTER ALGORITHM for overlapping blocks ═══
+     Now works purely on time overlap — adaptive scaling already solves
+     the "visually too dense" problem, so we use REAL time bounds here. */
   const sortedBlocks=dayBlocks.slice().sort((a,b)=>timeToMin(a.from)-timeToMin(b.from));
-  /* Group into clusters where blocks overlap */
   const clusters=[];
   sortedBlocks.forEach(b=>{
     const bf=timeToMin(b.from), bt=timeToMin(b.to);
-    /* Find cluster where this block overlaps with any existing block */
     const target=clusters.find(c=>c.some(cb=>{
       const cf=timeToMin(cb.from), ct=timeToMin(cb.to);
       return bf<ct && bt>cf;
     }));
     if(target) target.push(b); else clusters.push([b]);
   });
-  /* For each cluster, assign column index using interval-graph coloring */
-  const layout={};  // blockId → {col, totalCols}
+  const layout={};
   clusters.forEach(cluster=>{
-    /* Sort by start time within cluster */
     cluster.sort((a,b)=>timeToMin(a.from)-timeToMin(b.from));
-    const cols=[];  // each col = array of blocks in that column
+    const cols=[];
     cluster.forEach(b=>{
       const bf=timeToMin(b.from), bt=timeToMin(b.to);
-      /* Find first column where last block ends ≤ bf */
       let assigned=-1;
       for(let i=0;i<cols.length;i++){
         const lastInCol=cols[i][cols[i].length-1];
         if(timeToMin(lastInCol.to)<=bf){ cols[i].push(b); assigned=i; break; }
       }
       if(assigned===-1){ cols.push([b]); assigned=cols.length-1; }
-      layout[b.id]={col:assigned, _cluster:cluster};
+      layout[b.id]={col:assigned};
     });
     const totalCols=cols.length;
     cluster.forEach(b=>{ layout[b.id].totalCols=totalCols; });
   });
 
-  /* Empty-click zones (only between clusters, not within cluster gaps) */
+  /* Empty-click zones */
   let emptyZones='';
   let cursor=startMin;
   clusters.forEach(c=>{
-    /* The earliest start in this cluster */
     const minStart=Math.min(...c.map(b=>timeToMin(b.from)));
-    /* The latest end (since cluster is overlap, not chain) */
     const maxEnd=Math.max(...c.map(b=>timeToMin(b.to)));
     if(minStart>cursor){
-      const y=(cursor-startMin)/MIN_PER_PX;
-      const h=(minStart-cursor)/MIN_PER_PX;
-      emptyZones+=`<div class="cal-empty-click" style="top:${y}px;height:${h}px;" onclick="rtOpenModal(${cursor})"></div>`;
+      const y=minToY(cursor);
+      const h=minToY(minStart)-y;
+      if(h>6) emptyZones+=`<div class="cal-empty-click" style="top:${y}px;height:${h}px;" onclick="rtOpenModal(${cursor})"></div>`;
     }
     cursor=Math.max(cursor, maxEnd);
   });
   if(cursor<endMin){
-    const y=(cursor-startMin)/MIN_PER_PX;
-    const h=(endMin-cursor)/MIN_PER_PX;
-    emptyZones+=`<div class="cal-empty-click" style="top:${y}px;height:${h}px;" onclick="rtOpenModal(${cursor})"></div>`;
+    const y=minToY(cursor);
+    const h=minToY(endMin)-y;
+    if(h>6) emptyZones+=`<div class="cal-empty-click" style="top:${y}px;height:${h}px;" onclick="rtOpenModal(${cursor})"></div>`;
   }
 
-  /* Render blocks with cluster layout */
+  /* Render blocks */
   const blockHtml=dayBlocks.map(b=>{
     const C=RT_COLORS[b.color||0];
     const bf=timeToMin(b.from), bt=timeToMin(b.to);
-    const top=Math.max(0,(bf-startMin)/MIN_PER_PX);
-    const h=Math.max(20,(bt-bf)/MIN_PER_PX);
+    const top=Math.max(0, minToY(bf));
+    const h=Math.max(14, minToY(bt)-minToY(bf));
     const lay=layout[b.id]||{col:0,totalCols:1};
     const widthPct=100/lay.totalCols;
     const leftPct=lay.col*widthPct;
@@ -2255,14 +2301,14 @@ function rtRenderCalendar(){
     </div>`;
   }).join('');
 
-  /* Sleep area (visible portion only) */
+  /* Sleep area */
   let sleepHtml='';
   if(slM>startMin && slM<endMin){
-    const top=(slM-startMin)/MIN_PER_PX;
+    const top=minToY(slM);
     sleepHtml+=`<div class="cal-sleep" style="top:${top}px;height:${height-top}px;"><div class="cal-sleep-label">Schlaf ${sleepCfg.sleep}</div></div>`;
   }
   if(wkM>startMin){
-    const h=(wkM-startMin)/MIN_PER_PX;
+    const h=minToY(wkM);
     sleepHtml+=`<div class="cal-sleep" style="top:0;height:${h}px;"><div class="cal-sleep-label">Aufwachen ${sleepCfg.wake}</div></div>`;
   }
 
@@ -2270,7 +2316,7 @@ function rtRenderCalendar(){
   const now=nowMin();
   let nowHtml='';
   if(now>=startMin && now<=endMin){
-    const y=(now-startMin)/MIN_PER_PX;
+    const y=minToY(now);
     nowHtml=`<div class="cal-now-line" style="top:${y}px;"><div class="cal-now-dot"></div><div class="cal-now-time">${minToTime(now)}</div></div>`;
   }
 
