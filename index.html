@@ -82,7 +82,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:0.5px s
 .nav-tab svg{width:15px;height:15px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
 .nav-tab:hover{background:var(--bg2);color:var(--txt);}
 .nav-tab.active{background:var(--txt);color:var(--bg);}
-.nav-user{font-size:11px;color:var(--txt3);margin-left:6px;display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.nav-user{font-size:11px;color:var(--txt3);margin-left:auto;display:flex;align-items:center;gap:6px;flex-shrink:0;}
 .nav-user button{background:none;border:0.5px solid var(--brd2);border-radius:var(--rm);padding:4px 10px;font-size:11px;cursor:pointer;color:var(--txt2);font-family:var(--sans);}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--txt3);display:inline-block;}
 .sync-dot.ok{background:var(--accent);}.sync-dot.err{background:var(--avoid);}
@@ -432,31 +432,37 @@ textarea{resize:vertical;min-height:68px;line-height:1.6;}
 .week-day-pct{font-size:11px;color:var(--txt2);}
 .week-day.today{background:var(--accent-bg);border-color:var(--accent);}
 
+/* ── AVATAR MENU (Top-Right Dropdown) ── */
+.nav-avatar{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;font-family:var(--sans);font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;text-transform:uppercase;flex-shrink:0;transition:transform .12s;}
+.nav-avatar:hover{transform:scale(1.05);}
+.avatar-menu-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.18);z-index:600;}
+.avatar-menu-overlay.open{display:block;}
+.avatar-menu{position:absolute;top:calc(var(--nav-h) + 6px);right:14px;background:var(--bg);border:0.5px solid var(--brd2);border-radius:var(--rl);width:280px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,0.18);}
+.avatar-menu-header{padding:1.1rem 1.25rem;border-bottom:0.5px solid var(--brd);display:flex;align-items:center;gap:12px;background:var(--bg2);}
+.avatar-menu-circle{width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px;text-transform:uppercase;flex-shrink:0;}
+.avatar-menu-email{font-size:12px;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}
+.avatar-menu-section{padding:6px 0;border-bottom:0.5px solid var(--brd);}
+.avatar-menu-section:last-child{border-bottom:none;}
+.avatar-menu-item{display:flex;align-items:center;gap:11px;padding:9px 14px;cursor:pointer;font-size:13px;color:var(--txt);transition:background .1s;}
+.avatar-menu-item:hover{background:var(--bg2);}
+.avatar-menu-item svg{width:15px;height:15px;flex-shrink:0;color:var(--txt2);}
+.avatar-menu-item span:not(.avatar-menu-shortcut){flex:1;}
+.avatar-menu-shortcut{font-size:10px;color:var(--txt3);background:var(--bg3);padding:2px 6px;border-radius:4px;font-family:var(--sans);}
+
 /* ── MOBILE BOTTOM TAB BAR ── */
-.nav-more-overlay{display:none;}
-.nav-more-overlay.open{display:none;}  /* default: never shown on desktop */
 @media(max-width:700px){
   nav{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;padding:6px 4px calc(6px + env(safe-area-inset-bottom)) 4px;border-bottom:none;border-top:0.5px solid var(--brd);background:var(--bg);z-index:200;justify-content:space-around;overflow:visible;}
   .nav-brand{display:none!important;}
   .nav-tab{flex-direction:column;gap:2px;padding:5px 4px;font-size:9px;flex:1;justify-content:center;}
   .nav-tab svg{width:18px;height:18px;}
   .nav-label{display:block!important;font-size:9px;}
-  .nav-user{position:fixed;top:6px;right:6px;background:var(--bg);padding:4px 8px;border-radius:var(--rm);border:0.5px solid var(--brd);z-index:201;}
-  .nav-user span#nav-email{display:none;}
+  /* Avatar bleibt oben rechts auf Mobile sichtbar */
+  .nav-user{position:fixed;top:8px;right:10px;background:transparent;padding:0;border:none;z-index:201;display:flex;align-items:center;gap:6px;}
   body{padding-bottom:80px;padding-top:8px;}
-  .nav-mobile-hide{display:none!important;}
-  .nav-mobile-more{display:flex!important;}
-  /* Mobile "More" menu */
-  .nav-more-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;align-items:flex-end;justify-content:stretch;}
-  .nav-more-overlay.open{display:flex;}
-  .nav-more-sheet{background:var(--bg);width:100%;border-radius:var(--rxl) var(--rxl) 0 0;padding:1.25rem 1rem calc(1.25rem + env(safe-area-inset-bottom));border-top:0.5px solid var(--brd);}
-  .nav-more-sheet h4{font-size:13px;font-weight:500;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;}
-  .nav-more-item{display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:var(--rm);cursor:pointer;font-size:15px;color:var(--txt);}
-  .nav-more-item:hover{background:var(--bg2);}
-  .nav-more-item svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;}
+  .avatar-menu{right:8px;top:54px;width:calc(100% - 16px);max-width:320px;}
 }
 @media(min-width:701px){
-  .nav-mobile-only{display:none!important;}
+  .nav-user{display:flex;align-items:center;gap:10px;}
 }
 
 /* ── FINANCE ── */
@@ -467,8 +473,9 @@ textarea{resize:vertical;min-height:68px;line-height:1.6;}
 .fin-summary-amount{font-family:var(--serif);font-size:32px;line-height:1.1;margin-bottom:6px;}
 .fin-summary-meta{font-size:13px;opacity:.9;}
 .fin-quick-add{background:var(--bg);border:0.5px solid var(--brd);border-radius:var(--rl);padding:1.25rem;margin-bottom:1rem;}
-.fin-quick-row{display:grid;grid-template-columns:120px 1fr 160px 130px auto;gap:8px;align-items:end;}
-@media(max-width:780px){.fin-quick-row{grid-template-columns:1fr 1fr;}}
+.fin-quick-row{display:grid;grid-template-columns:130px minmax(0,1fr) 160px 130px auto;gap:8px;align-items:end;}
+.fin-quick-row input,.fin-quick-row select{width:100%;min-width:0;}
+@media(max-width:780px){.fin-quick-row{grid-template-columns:1fr 1fr;}.fin-quick-row button{grid-column:1/-1;}}
 .fin-cat-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--brd);gap:12px;}
 .fin-cat-row:last-child{border-bottom:none;}
 .fin-cat-name{font-size:13px;color:var(--txt);flex:1;min-width:0;}
@@ -633,44 +640,98 @@ const ALLOWED_EMAILS = ['deine@email.de', 'zweite@email.de'];</pre>
 
 <nav>
   <span class="nav-brand" style="display:flex;align-items:center;gap:8px;"><svg width="24" height="24" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="14" fill="#18180f"/><line x1="19" y1="48" x2="19" y2="16" stroke="#fff" stroke-width="7" stroke-linecap="round"/><line x1="45" y1="48" x2="45" y2="16" stroke="#fff" stroke-width="7" stroke-linecap="round"/><line x1="19" y1="16" x2="45" y2="48" stroke="#fff" stroke-width="7" stroke-linecap="round"/><circle cx="32" cy="32" r="5" fill="#52b788"/></svg>Nexus</span>
-  <button class="nav-tab active" data-slide="0" onclick="goTo(0)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="nav-label">Heute</span></button>
-  <button class="nav-tab" data-slide="1" onclick="goTo(1)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg><span class="nav-label">Matrix</span></button>
-  <button class="nav-tab nav-mobile-hide" data-slide="2" onclick="goTo(2)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="8" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="nav-label">Übersicht</span></button>
-  <button class="nav-tab" data-slide="3" onclick="goTo(3)"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="9" y1="2" x2="9" y2="6"/><line x1="15" y1="2" x2="15" y2="6"/></svg><span class="nav-label">Routine</span></button>
-  <button class="nav-tab nav-mobile-hide" data-slide="4" onclick="goTo(4)"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><polyline points="3 6 4 7 6 5"/><polyline points="3 12 4 13 6 11"/><polyline points="3 18 4 19 6 17"/></svg><span class="nav-label">Listen</span></button>
-  <button class="nav-tab" data-slide="5" onclick="goTo(5)" id="nav-tab-diary"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg><span class="nav-label">Tagebuch</span></button>
-  <button class="nav-tab nav-mobile-hide" data-slide="6" onclick="goTo(6)"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="nav-label">Profil</span></button>
-  <button class="nav-tab nav-mobile-hide" data-slide="7" onclick="goTo(7)"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="nav-label">Finanzen</span></button>
-  <button class="nav-tab nav-mobile-only" onclick="openMoreMenu()"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg><span class="nav-label">Mehr</span></button>
+  <button class="nav-tab active" data-slide="0" onclick="goTo(0)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="nav-label" data-i18n="nav.today">Heute</span></button>
+  <button class="nav-tab" data-slide="1" onclick="goTo(1)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg><span class="nav-label" data-i18n="nav.matrix">Matrix</span></button>
+  <button class="nav-tab" data-slide="3" onclick="goTo(3)"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="9" y1="2" x2="9" y2="6"/><line x1="15" y1="2" x2="15" y2="6"/></svg><span class="nav-label" data-i18n="nav.routine">Routine</span></button>
+  <button class="nav-tab" data-slide="5" onclick="goTo(5)" id="nav-tab-diary"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg><span class="nav-label" data-i18n="nav.diary">Tagebuch</span></button>
+  <button class="nav-tab" data-slide="7" onclick="goTo(7)"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="nav-label" data-i18n="nav.finance">Finanzen</span></button>
   <div class="nav-user">
-    <button class="theme-toggle" onclick="toggleTheme()" title="Theme wechseln" id="theme-toggle-btn">☾</button>
-    <button onclick="openSearch()" title="Suche (⌘K)" style="background:none;border:0.5px solid var(--brd2);border-radius:var(--rm);padding:4px 8px;font-size:11px;cursor:pointer;color:var(--txt2);font-family:var(--sans);">🔍</button>
-    <span class="sync-dot" id="sync-dot"></span><span id="nav-email" style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span><button onclick="doLogout()">Abmelden</button>
+    <span class="sync-dot" id="sync-dot" title="Sync-Status"></span>
+    <button class="nav-avatar" onclick="openAvatarMenu(event)" id="nav-avatar-btn" title="Menü">A</button>
   </div>
 </nav>
 
-<!-- Mobile More Menu -->
-<div class="nav-more-overlay" id="nav-more-overlay" onclick="closeMoreMenu()">
-  <div class="nav-more-sheet" onclick="event.stopPropagation()">
-    <h4>Weitere Bereiche</h4>
-    <div class="nav-more-item" onclick="goTo(2);closeMoreMenu();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="8" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Übersicht</div>
-    <div class="nav-more-item" onclick="goTo(4);closeMoreMenu();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><polyline points="3 6 4 7 6 5"/><polyline points="3 12 4 13 6 11"/><polyline points="3 18 4 19 6 17"/></svg>Listen</div>
-    <div class="nav-more-item" onclick="goTo(6);closeMoreMenu();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Profil</div>
-    <div class="nav-more-item" onclick="goTo(7);closeMoreMenu();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Finanzen</div>
+<!-- Avatar Menu (Top-Right Dropdown) -->
+<div class="avatar-menu-overlay" id="avatar-menu-overlay" onclick="closeAvatarMenu()">
+  <div class="avatar-menu" onclick="event.stopPropagation()">
+    <div class="avatar-menu-header">
+      <div class="avatar-menu-circle" id="avatar-menu-circle">A</div>
+      <div class="avatar-menu-email" id="avatar-menu-email"></div>
+    </div>
+    <div class="avatar-menu-section">
+      <div class="avatar-menu-item" onclick="openSearch();closeAvatarMenu();">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span data-i18n="menu.search">Suchen</span>
+        <span class="avatar-menu-shortcut">⌘K</span>
+      </div>
+      <div class="avatar-menu-item" onclick="goTo(4);closeAvatarMenu();">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><polyline points="3 6 4 7 6 5"/><polyline points="3 12 4 13 6 11"/><polyline points="3 18 4 19 6 17"/></svg>
+        <span data-i18n="menu.lists">Listen</span>
+      </div>
+      <div class="avatar-menu-item" onclick="goTo(6);closeAvatarMenu();">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span data-i18n="menu.profile">Profil</span>
+      </div>
+    </div>
+    <div class="avatar-menu-section">
+      <div class="avatar-menu-item" onclick="toggleTheme();">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" id="theme-icon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <span data-i18n="menu.theme">Dunkler Modus</span>
+        <span class="avatar-menu-shortcut" id="theme-state">aus</span>
+      </div>
+      <div class="avatar-menu-item" onclick="cycleLang()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span data-i18n="menu.lang">Sprache</span>
+        <span class="avatar-menu-shortcut" id="lang-state">DE</span>
+      </div>
+    </div>
+    <div class="avatar-menu-section">
+      <div class="avatar-menu-item" onclick="doLogout();closeAvatarMenu();">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span data-i18n="menu.logout">Abmelden</span>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- SLIDE 0: HEUTE -->
+<!-- SLIDE 0: HEUTE (mit Übersicht integriert) -->
 <div class="slide active" id="slide-0">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
     <div><div class="sl-title" style="margin-bottom:4px;" id="today-greeting">Guten Tag</div><div class="muted" id="today-date"></div></div>
-    <div style="display:flex;gap:8px;"><button class="btn-sec" onclick="dyNewEntry()" id="today-diary-btn">📓 Tagebuch</button><button class="btn-pri" onclick="emOpenModal()">+ Aufgabe</button></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-sec" onclick="dyNewEntry()" id="today-diary-btn"><span data-i18n="today.diary">Tagebuch</span></button>
+      <button class="btn-pri" onclick="emOpenModal()">+ <span data-i18n="today.task">Aufgabe</span></button>
+    </div>
   </div>
   <div id="today-hero"></div>
-  <div class="today-grid">
-    <div class="today-card"><div class="sec-title">Als nächstes</div><div id="today-next"></div></div>
-    <div class="today-card"><div class="sec-title">Top-Aufgaben heute</div><div id="today-tasks"></div></div>
-    <div class="today-card"><div class="sec-title">Status</div><div id="today-status"></div></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:1.25rem;">
+    <div class="today-card">
+      <div class="sec-title" data-i18n="today.next">Als nächstes</div>
+      <div id="today-next"></div>
+    </div>
+    <div class="today-card">
+      <div class="sec-title" data-i18n="today.tasks">Top-Aufgaben heute</div>
+      <div id="today-tasks"></div>
+    </div>
+  </div>
+
+  <!-- ÜBERSICHT INTEGRATION -->
+  <div class="ov-grid">
+    <div class="ov-col">
+      <div class="ov-col-header"><span class="ov-col-title" data-i18n="ov.todo">To-Do</span><span class="muted" id="ov-todo-count"></span></div>
+      <div class="ov-items" id="ov-todo-list"></div>
+      <div class="ov-add-row"><input type="text" id="ov-todo-inp" data-i18n-placeholder="ov.task" placeholder="Aufgabe…" onkeydown="if(event.key==='Enter')ovAddTodo()"/><button class="btn-pri" onclick="ovAddTodo()">+</button></div>
+    </div>
+    <div class="ov-col">
+      <div class="ov-col-header"><span class="ov-col-title" data-i18n="ov.rules">Meine Regeln</span></div>
+      <div class="ov-items" id="ov-rules-list"></div>
+      <div class="ov-add-row"><input type="text" id="ov-rule-inp" data-i18n-placeholder="ov.newrule" placeholder="Neue Regel…" onkeydown="if(event.key==='Enter')ovAddRule()"/><button class="btn-pri" onclick="ovAddRule()">+</button></div>
+    </div>
+    <div class="ov-col">
+      <div class="ov-col-header"><span class="ov-col-title" data-i18n="ov.goals">Ziele</span><button class="btn-ghost" onclick="ovOpenGoalModal()" style="font-size:12px;">+ <span data-i18n="ov.goal">Ziel</span></button></div>
+      <div class="ov-items" id="ov-goals-list"></div>
+    </div>
   </div>
 </div>
 
@@ -693,26 +754,7 @@ const ALLOWED_EMAILS = ['deine@email.de', 'zweite@email.de'];</pre>
   </div>
 </div>
 
-<!-- SLIDE 2: ÜBERSICHT -->
-<div class="slide" id="slide-2">
-  <div class="sl-title">Übersicht</div>
-  <div class="ov-grid">
-    <div class="ov-col">
-      <div class="ov-col-header"><span class="ov-col-title">To-Do</span><span class="muted" id="ov-todo-count"></span></div>
-      <div class="ov-items" id="ov-todo-list"></div>
-      <div class="ov-add-row"><input type="text" id="ov-todo-inp" placeholder="Aufgabe…" onkeydown="if(event.key==='Enter')ovAddTodo()"/><button class="btn-pri" onclick="ovAddTodo()">+</button></div>
-    </div>
-    <div class="ov-col">
-      <div class="ov-col-header"><span class="ov-col-title">Meine Regeln</span></div>
-      <div class="ov-items" id="ov-rules-list"></div>
-      <div class="ov-add-row"><input type="text" id="ov-rule-inp" placeholder="Neue Regel…" onkeydown="if(event.key==='Enter')ovAddRule()"/><button class="btn-pri" onclick="ovAddRule()">+</button></div>
-    </div>
-    <div class="ov-col">
-      <div class="ov-col-header"><span class="ov-col-title">Ziele</span><button class="btn-ghost" onclick="ovOpenGoalModal()" style="font-size:12px;">+ Ziel</button></div>
-      <div class="ov-items" id="ov-goals-list"></div>
-    </div>
-  </div>
-</div>
+<!-- SLIDE 2: ÜBERSICHT (entfernt - Inhalt in Heute integriert, IDs der DOM-Elemente wurden dorthin verschoben) -->
 
 <!-- SLIDE 3: ROUTINE -->
 <div class="slide" id="slide-3">
@@ -1069,6 +1111,7 @@ function enterApp(user){
   ovData={todos:[],rules:[],goals:[]};
   lstInitDone=false; _loading=false;
   applyTheme();
+  loadLang();
   loadAll();
 }
 
@@ -1196,6 +1239,72 @@ function currentWeekday(){ /* 0=Mo, 6=So */
   const d=new Date().getDay();
   return d===0?6:d-1;
 }
+
+/* ═══════════════════════════════════════════════
+   I18N
+═══════════════════════════════════════════════ */
+let currentLang='de';
+const I18N={
+  de:{
+    'nav.today':'Heute', 'nav.matrix':'Matrix', 'nav.routine':'Routine', 'nav.diary':'Tagebuch', 'nav.finance':'Finanzen',
+    'menu.search':'Suchen', 'menu.lists':'Listen', 'menu.profile':'Profil',
+    'menu.theme':'Dunkler Modus', 'menu.theme.on':'an', 'menu.theme.off':'aus',
+    'menu.lang':'Sprache', 'menu.logout':'Abmelden',
+    'today.greet.morning':'Guten Morgen', 'today.greet.day':'Guten Tag', 'today.greet.evening':'Guten Abend',
+    'today.diary':'Tagebuch', 'today.diary.edit':'Tagebuch bearbeiten', 'today.task':'Aufgabe',
+    'today.next':'Als nächstes', 'today.tasks':'Top-Aufgaben heute',
+    'today.now':'Jetzt läuft', 'today.remaining':'noch', 'today.min':'Min',
+    'today.next.in':'Als nächstes in', 'today.label':'Heute', 'today.free':'Freier Moment',
+    'today.noblock':'Kein geplanter Block aktiv.',
+    'today.noblocks.left':'Keine weiteren Blöcke heute.', 'today.notasks':'Keine offenen Prioritäten.',
+    'ov.todo':'To-Do', 'ov.rules':'Meine Regeln', 'ov.goals':'Ziele', 'ov.task':'Aufgabe…', 'ov.newrule':'Neue Regel…', 'ov.goal':'Ziel'
+  },
+  en:{
+    'nav.today':'Today', 'nav.matrix':'Matrix', 'nav.routine':'Routine', 'nav.diary':'Diary', 'nav.finance':'Finance',
+    'menu.search':'Search', 'menu.lists':'Lists', 'menu.profile':'Profile',
+    'menu.theme':'Dark mode', 'menu.theme.on':'on', 'menu.theme.off':'off',
+    'menu.lang':'Language', 'menu.logout':'Sign out',
+    'today.greet.morning':'Good morning', 'today.greet.day':'Good afternoon', 'today.greet.evening':'Good evening',
+    'today.diary':'Diary', 'today.diary.edit':'Edit diary', 'today.task':'Task',
+    'today.next':'Up next', 'today.tasks':"Today's top tasks",
+    'today.now':'Now', 'today.remaining':'still', 'today.min':'min',
+    'today.next.in':'Next in', 'today.label':'Today', 'today.free':'Free moment',
+    'today.noblock':'No block currently active.',
+    'today.noblocks.left':'No more blocks today.', 'today.notasks':'No open priorities.',
+    'ov.todo':'To-Do', 'ov.rules':'My rules', 'ov.goals':'Goals', 'ov.task':'Task…', 'ov.newrule':'New rule…', 'ov.goal':'Goal'
+  }
+};
+
+function t(key){
+  return (I18N[currentLang]||I18N.de)[key] || I18N.de[key] || key;
+}
+
+async function loadLang(){
+  const stored=await dbGetSingle('lang');
+  if(stored && I18N[stored]) currentLang=stored;
+  applyI18N();
+}
+
+function applyI18N(){
+  /* Replace text in any element with data-i18n attribute */
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key=el.dataset.i18n;
+    el.textContent=t(key);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+    const key=el.dataset.i18nPlaceholder;
+    el.placeholder=t(key);
+  });
+}
+
+async function cycleLang(){
+  currentLang = currentLang==='de' ? 'en' : 'de';
+  await dbSetSingle('lang', currentLang);
+  applyI18N();
+  /* Re-render slides that have dynamic text */
+  tdRender();
+  if($('avatar-menu-overlay').classList.contains('open')) refreshAvatarMenuState();
+}
 const WD_LABELS=['Mo','Di','Mi','Do','Fr','Sa','So'];
 
 function closeOverlay(id){ $(id).classList.remove('open'); }
@@ -1224,28 +1333,48 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 const slides=document.querySelectorAll('.slide');
 function goTo(i){
-  /* Activate the matching nav-tab by data-slide attribute (set below by index match) */
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   const tabs=document.querySelectorAll('.nav-tab[data-slide]');
   tabs.forEach(t=>{ if(parseInt(t.dataset.slide)===i) t.classList.add('active'); });
   slides.forEach((s,j)=>s.classList.toggle('active',j===i));
-  if(i===0) tdRender();
+  if(i===0){ tdRender(); ovRender(); }
   if(i===1) emRender();
-  if(i===2) ovRender();
   if(i===3) rtRenderCalendar();
+  if(i===4) lstRender();
   if(i===5) dyRenderMain();
   if(i===6) pfRender();
   if(i===7) finRender();
 }
 
-function openMoreMenu(){ $('nav-more-overlay').classList.add('open'); }
-function closeMoreMenu(){ $('nav-more-overlay').classList.remove('open'); }
+/* AVATAR MENU */
+function openAvatarMenu(e){
+  if(e) e.stopPropagation();
+  $('avatar-menu-overlay').classList.add('open');
+  /* Update theme + lang state labels */
+  refreshAvatarMenuState();
+}
+function closeAvatarMenu(){ $('avatar-menu-overlay').classList.remove('open'); }
+function refreshAvatarMenuState(){
+  /* email + initial */
+  const em=currentUser?.email||'';
+  $('avatar-menu-email').textContent=em;
+  const initial=(em.charAt(0)||'?').toUpperCase();
+  $('nav-avatar-btn').textContent=initial;
+  $('avatar-menu-circle').textContent=initial;
+  /* theme indicator */
+  const isDark=document.documentElement.classList.contains('force-dark') ||
+               (!document.documentElement.classList.contains('force-light') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  $('theme-state').textContent=isDark?t('menu.theme.on'):t('menu.theme.off');
+  $('lang-state').textContent=currentLang.toUpperCase();
+}
 
 let _loading=false;
 async function loadAll(){
   if(_loading) return; _loading=true;
   await Promise.all([emLoad(), emLoadRoles(), rtLoad(), lstLoad(), dyLoad(), ovLoad(), pfLoadIdents(), finLoad()]);
-  emRender(); tdRender(); updateDiaryBadge();
+  applyI18N();
+  emRender(); tdRender(); ovRender(); updateDiaryBadge();
+  refreshAvatarMenuState();
   _loading=false;
 }
 
@@ -1258,7 +1387,6 @@ async function applyTheme(){
   const dark=saved==='dark' || (saved==null && sysDark);
   document.documentElement.classList.toggle('force-dark',dark);
   document.documentElement.classList.toggle('force-light',!dark && saved==='light');
-  const btn=$('theme-toggle-btn'); if(btn) btn.textContent=dark?'☀':'☾';
 }
 async function toggleTheme(){
   const cur=await dbGetSingle('theme');
@@ -1266,7 +1394,8 @@ async function toggleTheme(){
   const isDark=cur==='dark' || (cur==null && sysDark);
   const next=isDark?'light':'dark';
   await dbSetSingle('theme',next);
-  applyTheme();
+  await applyTheme();
+  refreshAvatarMenuState();
 }
 
 /* ═══════════════════════════════════════════════
@@ -1306,13 +1435,13 @@ function runSearch(){
         res.push({cat:'Matrix', title:t.name, sub:`${t.quad.toUpperCase()}${t.note?' · '+t.note:''}`, action:()=>{goTo(1);setTimeout(()=>emOpenModal(null,t.id),100);}});
     });
     (ovData.todos||[]).forEach(t=>{
-      if(t.text.toLowerCase().includes(q)) res.push({cat:'To-Do',title:t.text,sub:'Übersicht',action:()=>goTo(2)});
+      if(t.text.toLowerCase().includes(q)) res.push({cat:'To-Do',title:t.text,sub:"Heute",action:()=>goTo(0)});
     });
     (ovData.rules||[]).forEach(r=>{
-      if(r.text.toLowerCase().includes(q)) res.push({cat:'Regeln',title:r.text,sub:'Übersicht',action:()=>goTo(2)});
+      if(r.text.toLowerCase().includes(q)) res.push({cat:'Regeln',title:r.text,sub:"Heute",action:()=>goTo(0)});
     });
     (ovData.goals||[]).forEach(g=>{
-      if(g.name.toLowerCase().includes(q)) res.push({cat:'Ziele',title:g.name,sub:`${g.pct}%`,action:()=>goTo(2)});
+      if(g.name.toLowerCase().includes(q)) res.push({cat:'Ziele',title:g.name,sub:`${g.pct}%`,action:()=>goTo(0)});
     });
     rtBlocks.forEach(b=>{
       if(b.name.toLowerCase().includes(q)) res.push({cat:'Routine',title:b.name,sub:`${b.from}–${b.to}`,action:()=>goTo(3)});
@@ -1427,7 +1556,7 @@ function tdRender(){
   const now=nowMin();
   const d=new Date();
   const hour=d.getHours();
-  const greet=hour<11?'Guten Morgen':hour<18?'Guten Tag':'Guten Abend';
+  const greet=hour<11?t('today.greet.morning'):hour<18?t('today.greet.day'):t('today.greet.evening');
   $('today-greeting').textContent=greet;
   $('today-date').textContent=fmtDate(todayStr());
 
@@ -1435,8 +1564,9 @@ function tdRender(){
   const hasDiaryToday=dyEntries.some(e=>e.date===todayStr());
   const dbtn=$('today-diary-btn');
   if(dbtn){
-    if(hasDiaryToday){ dbtn.textContent='📓 Tagebuch bearbeiten'; dbtn.style.opacity='.7'; }
-    else             { dbtn.textContent='📓 Tagebuch heute'; dbtn.style.opacity='1'; }
+    const span=dbtn.querySelector('span[data-i18n]');
+    if(span){ span.textContent=hasDiaryToday?t('today.diary.edit'):t('today.diary'); }
+    dbtn.style.opacity=hasDiaryToday?'.7':'1';
   }
 
   /* Today's relevant blocks = weekday match */
@@ -1453,9 +1583,9 @@ function tdRender(){
     const C=RT_COLORS[current.color||0];
     const mins=timeToMin(current.to)-now;
     hero.innerHTML=`<div class="today-hero" style="background:linear-gradient(135deg,${C.brd},${C.txt});">
-      <div class="today-hero-label">Jetzt läuft</div>
+      <div class="today-hero-label">${t('today.now')}</div>
       <div class="today-hero-name">${current.name}</div>
-      <div class="today-hero-meta">${current.from}–${current.to} · noch ${mins} Min${current.why?' · '+current.why:''}</div>
+      <div class="today-hero-meta">${current.from}–${current.to} · ${t('today.remaining')} ${mins} ${t('today.min')}${current.why?' · '+current.why:''}</div>
     </div>`;
   } else {
     const next=relevantBlocks.find(b=>timeToMin(b.from)>now);
@@ -1464,43 +1594,32 @@ function tdRender(){
       const h=Math.floor(mins/60), m=mins%60;
       const timeStr=h>0?`${h}h ${m}min`:`${m}min`;
       hero.innerHTML=`<div class="today-hero empty">
-        <div class="today-hero-label">Als nächstes in ${timeStr}</div>
+        <div class="today-hero-label">${t('today.next.in')} ${timeStr}</div>
         <div class="today-hero-name">${next.name}</div>
         <div class="today-hero-meta">${next.from}–${next.to}${next.why?' · '+next.why:''}</div>
       </div>`;
     } else {
-      hero.innerHTML=`<div class="today-hero empty"><div class="today-hero-label">Heute</div><div class="today-hero-name">Freier Moment</div><div class="today-hero-meta">Kein geplanter Block aktiv.</div></div>`;
+      hero.innerHTML=`<div class="today-hero empty"><div class="today-hero-label">${t('today.label')}</div><div class="today-hero-name">${t('today.free')}</div><div class="today-hero-meta">${t('today.noblock')}</div></div>`;
     }
   }
 
-  /* Next 3 blocks */
+  /* Next 4 blocks */
   const upcoming=relevantBlocks.filter(b=>timeToMin(b.from)>now).slice(0,4);
   $('today-next').innerHTML=upcoming.length?upcoming.map(b=>{
     const C=RT_COLORS[b.color||0];
     return `<div class="today-next-item"><span class="today-next-time">${b.from}</span><span class="today-next-dot" style="background:${C.brd};"></span><span class="today-next-name">${b.name}</span></div>`;
-  }).join(''):'<div class="muted">Keine weiteren Blöcke heute.</div>';
+  }).join(''):`<div class="muted">${t('today.noblocks.left')}</div>`;
 
   /* Top open tasks Q1/Q2 */
   const topTasks=emTasks.filter(t=>!t.done && (t.quad==='q1'||t.quad==='q2')).slice(0,5);
-  $('today-tasks').innerHTML=topTasks.length?topTasks.map(t=>{
-    const col=t.quad==='q1'?'#E24B4A':'#185FA5';
-    return `<div class="today-next-item" style="cursor:pointer;" onclick="goTo(1);setTimeout(()=>emOpenModal(null,'${t.id}'),80);">
+  $('today-tasks').innerHTML=topTasks.length?topTasks.map(tk=>{
+    const col=tk.quad==='q1'?'#E24B4A':'#185FA5';
+    return `<div class="today-next-item" style="cursor:pointer;" onclick="goTo(1);setTimeout(()=>emOpenModal(null,'${tk.id}'),80);">
       <span class="today-next-dot" style="background:${col};"></span>
-      <span class="today-next-name">${t.name}</span>
-      <span class="today-next-time">${t.quad.toUpperCase()}</span>
+      <span class="today-next-name">${tk.name}</span>
+      <span class="today-next-time">${tk.quad.toUpperCase()}</span>
     </div>`;
-  }).join(''):'<div class="muted">Keine offenen Prioritäten.</div>';
-
-  /* Status */
-  const e=dyEntries.find(x=>x.date===todayStr());
-  const autoPct=computeAutoRoutinePct(todayStr());
-  const openTasks=emTasks.filter(t=>!t.done).length;
-  $('today-status').innerHTML=`
-    <div class="today-quick-stat"><span class="today-quick-stat-label">Tagebuch</span><span class="today-quick-stat-val ${e?'ok':'warn'}">${e?'✓ Geschrieben':'Offen'}</span></div>
-    <div class="today-quick-stat"><span class="today-quick-stat-label">Routine heute</span><span class="today-quick-stat-val">${autoPct}%</span></div>
-    <div class="today-quick-stat"><span class="today-quick-stat-label">Offene Aufgaben</span><span class="today-quick-stat-val">${openTasks}</span></div>
-    <div class="today-quick-stat"><span class="today-quick-stat-label">Streak</span><span class="today-quick-stat-val">${computeStreak()} Tage</span></div>
-  `;
+  }).join(''):`<div class="muted">${t('today.notasks')}</div>`;
 }
 
 function computeStreak(){
