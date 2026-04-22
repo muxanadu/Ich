@@ -1336,7 +1336,11 @@ function goTo(i){
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   const tabs=document.querySelectorAll('.nav-tab[data-slide]');
   tabs.forEach(t=>{ if(parseInt(t.dataset.slide)===i) t.classList.add('active'); });
-  slides.forEach((s,j)=>s.classList.toggle('active',j===i));
+  /* Match slides by actual ID, not array index (slide-2 was removed) */
+  slides.forEach(s=>{
+    const sid=parseInt(s.id.replace('slide-',''));
+    s.classList.toggle('active', sid===i);
+  });
   if(i===0){ tdRender(); ovRender(); }
   if(i===1) emRender();
   if(i===3) rtRenderCalendar();
