@@ -1104,7 +1104,7 @@ function enterApp(user){
   $('auth-screen').style.display='none';
   $('setup-screen').style.display='none';
   $('main-app').style.display='';
-  $('nav-email').textContent=user.email||'';
+  /* Email is now shown in the avatar menu (see refreshAvatarMenuState) */
   emTasks=[]; emRoles=[]; lstLists=[]; dyEntries=[]; pfIdents=[];
   rtBlocks=[]; rtSleep={weekday:{sleep:'22:30',wake:'06:30'}, weekend:{sleep:'23:30',wake:'08:00'}}; rtWork={enabled:false, weekdays:[0,1,2,3,4], start:'08:00', end:'17:00', breaks:[]};
   finFixed=[]; finExpenses=[]; finBudgets=[];
